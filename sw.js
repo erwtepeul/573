@@ -1,4 +1,4 @@
-var CACHE = 'zikr-v1';
+var CACHE = 'zikr-v2';
 var ASSETS = [
   './tasbeeh-counter.html',
   './manifest.webmanifest',
@@ -20,21 +20,16 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-// cache-first, falling back to network (fonts etc. get cached on first use)
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(function (hit) {
-      if (hit) return hit;
-      return fetch(e.request).then(function (res) {
-        if (res && res.ok) {
-          var clone = res.clone();
-          caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
-        }
+  var isPage = e.request.mode === 'navigate' || e.request.destination === 'document';
+  if (isPage) {
+    // network-first for the app itself, so updates arrive on next launch; cache when offline
+    e.respondWith(
+      fetch(e.request).then(function (res) {
+        var clone = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
         return res;
       }).catch(function () {
-        return caches.match('./tasbeeh-counter.html');
-      });
-    })
-  );
-});
+        return caches.match(e.request).then(function (hit) {
+          return hit || ca
