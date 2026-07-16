@@ -799,7 +799,7 @@
 
   // ---- PWA service worker (no-op when opened as a plain file) ----
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(function () {});
+    navigator.serviceWorker.register('sw.js').catch(function () {});
   }
 
   // Auto-fit a nowrap line to its container (element must be visible to measure)
@@ -820,4 +820,7 @@
   fitVerse();
 
   render();
-})()
+})();
+</script>
+</body>
+</html>
