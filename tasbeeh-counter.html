@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#161628">
+<meta name="theme-color" content="#0e0e1c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
@@ -160,9 +160,10 @@
   .gear {
     position: absolute; z-index: 6;
     top: max(26px, env(safe-area-inset-top)); right: 24px;
-    background: none; border: none; cursor: pointer;
-    color: var(--gold); font-size: 1.35rem; line-height: 1;
-    opacity: 0.75;
+    width: 26px; height: 26px;
+    border: none; cursor: pointer; opacity: 0.8;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E") no-repeat center / contain;
+    filter: drop-shadow(0 0 3px rgba(212,175,55,0.3));
   }
   .gear:active { opacity: 1; }
 
@@ -360,7 +361,7 @@
 
   <!-- Splash: Quran verse -->
   <div id="splash" class="screen">
-    <button class="gear" id="gearBtn" type="button" aria-label="settings">⚙</button>
+    <button class="gear" id="gearBtn" type="button" aria-label="settings"></button>
     <div class="crescent">☪</div>
     <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
     <div class="verse-urdu" id="verseUrdu"></div>
@@ -417,7 +418,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.3.1';
+  var APP_VERSION = '1.3.2';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true };
@@ -662,7 +663,12 @@
   document.getElementById('resetBtn').addEventListener('click', function () {
     if (confirm(T().confirmReset)) reset();
   });
-  document.getElementById('againBtn').addEventListener('click', reset);
+  document.getElementById('againBtn').addEventListener('click', function () {
+    count = 0;
+    save();
+    render();
+    show(splash);
+  });
 
   // ---------- Daily verse (rotates deterministically by date) ----------
   // ar: Qur'an text (quran.com, imlaei script) | ur: Fatah Muhammad Jalandhari | nl: Sofian S. Siregar
@@ -1050,6 +1056,8 @@
   function applySettings() {
     var t = T();
     document.body.setAttribute('data-theme', SET.theme);
+    var tc = { blue: '#0e0e1c', black: '#0a0a0a', green: '#07170e' };
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', tc[SET.theme] || '#0e0e1c');
     document.body.setAttribute('data-script', SET.script);
     document.getElementById('startBtn').textContent = t.start;
     document.getElementById('againBtn').textContent = t.again;
