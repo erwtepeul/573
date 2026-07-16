@@ -99,13 +99,6 @@
     font-size: 0.7rem; color: var(--gold); opacity: 0.8;
     margin-bottom: 30px;
   }
-  .hijri {
-    direction: ltr;
-    font-family: 'Poppins', sans-serif; font-weight: 300;
-    font-size: 0.75rem; color: var(--gold); opacity: 0.85;
-    letter-spacing: 0.6px;
-    margin: -14px 0 26px;
-  }
   .presets {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 10px; margin: 7vh 0 28px; width: 100%; max-width: 320px;
@@ -305,7 +298,6 @@
   <div id="splash" class="screen">
     <div class="crescent">☪</div>
     <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
-    <div class="hijri" id="hijri"></div>
     <div class="verse-urdu" id="verseUrdu"></div>
     <div class="verse-en" id="verseEn"></div>
     <div class="verse-ref" id="verseRef"></div>
@@ -774,12 +766,6 @@
     presetsWrap.appendChild(b);
   });
 
-  // ---- Hijri date (Umm al-Qura) ----
-  try {
-    document.getElementById('hijri').textContent =
-      new Intl.DateTimeFormat('en-GB-u-ca-islamic-umalqura', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-  } catch (e) {}
-
   // ---- Completion star-burst ----
   function starBurst() {
     var wrap = document.querySelector('.star-wrap');
@@ -824,3 +810,4 @@
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
