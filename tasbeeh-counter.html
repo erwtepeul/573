@@ -21,8 +21,8 @@
     --bg1: #262647;
     --bg2: #191930;
     --bg3: #0e0e1c;
-    --btn1: var(--green-light);
-    --btn2: var(--green-dark);
+    --btn1: #1c1c36;
+    --btn2: #10101f;
     --gold: #d4af37;
     --gold-light: #f0d98c;
     --cream: #faf6ec;
@@ -31,7 +31,7 @@
   html, body { height: 100%; overflow: hidden; }
   body {
     font-family: 'Amiri', serif;
-    background: radial-gradient(ellipse at 50% 20%, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
+    background: var(--bg3);
     color: var(--cream);
     display: flex;
     align-items: center;
@@ -41,8 +41,8 @@
     touch-action: manipulation;
   }
   /* Color themes: background only; frame, buttons and gold stay the same */
-  body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; --btn1: #303030; --btn2: #0e0e0e; }
-  body[data-theme="green"] { --bg1: #143526; --bg2: #0d2618; --bg3: #07170e; --btn1: #1d4a33; --btn2: #081b10; }
+  body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; --btn1: #1c1c1c; --btn2: #0c0c0c; }
+  body[data-theme="green"] { --bg1: #143526; --bg2: #0d2618; --bg3: #07170e; --btn1: #122b1d; --btn2: #091a10; }
   /* Urdu script mode: Nastaliq typeface for Urdu text */
   body[data-script="ur"] .verse-urdu { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; font-size: 1.3rem; line-height: 2.5; }
   body[data-script="ur"] .done-msg,
@@ -90,7 +90,7 @@
   .hidden { display: none !important; }
 
   /* ---------- Splash ---------- */
-  #splash { animation: fadeIn 1.2s ease; }
+  #splash, #settings { animation: fadeIn 1.2s ease; }
   /* lift the text/icon block without moving the preset picker and start button */
   .crescent, .bismillah, .verse-urdu, .verse-en, .verse-ref { transform: translateY(-6vh); }
   .crescent { font-size: 3rem; color: var(--gold); margin-bottom: 8px; font-family: serif; }
@@ -160,7 +160,7 @@
   .gear {
     position: absolute; z-index: 6;
     top: max(26px, env(safe-area-inset-top)); right: 24px;
-    width: 26px; height: 26px;
+    width: 19px; height: 19px;
     border: none; cursor: pointer; opacity: 0.8;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z'/%3E%3C/svg%3E") no-repeat center / contain;
     filter: drop-shadow(0 0 3px rgba(212,175,55,0.3));
@@ -192,6 +192,18 @@
     border-color: rgba(255,224,102,0.9);
     background: rgba(212,175,55,0.18);
     color: var(--cream);
+  }
+
+  .copyright {
+    position: absolute;
+    bottom: max(48px, calc(env(safe-area-inset-bottom) + 42px));
+    left: 0; right: 0;
+    text-align: center;
+    direction: ltr;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.58rem; font-weight: 300;
+    color: var(--gold-light); opacity: 0.7;
+    letter-spacing: 0.5px;
   }
 
   /* ---------- Counter ---------- */
@@ -378,6 +390,8 @@
     <div class="set-title" id="setTitle">Settings</div>
     <div class="set-rows" id="setRows"></div>
     <button class="start-btn" id="backBtn" style="margin-top:36px;">Back</button>
+    <div class="copyright">© 2026 ersha limited. All rights reserved.</div>
+    <div class="ver" id="ver2"></div>
   </div>
 
   <!-- Counter -->
@@ -418,7 +432,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.3.2';
+  var APP_VERSION = '1.3.9';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true };
@@ -1115,6 +1129,7 @@
 
   // ---------- Version indicator ----------
   document.getElementById('ver').textContent = 'v' + APP_VERSION;
+  document.getElementById('ver2').textContent = 'v' + APP_VERSION;
 
   // ---------- PWA service worker (no-op when opened as a plain file) ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
