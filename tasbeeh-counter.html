@@ -432,7 +432,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.3.6';
+  var APP_VERSION = '1.3.7';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true };
@@ -601,19 +601,6 @@
     if (el === counter) requestWake(); else releaseWake();
   }
 
-  // Phone back button: return to the start screen instead of leaving the app
-  function goSub(el) {
-    if (!(history.state && history.state.sub)) {
-      try { history.pushState({ sub: true }, ''); } catch (e) {}
-    }
-    show(el);
-  }
-  function goHome() {
-    if (history.state && history.state.sub) history.back();
-    else show(splash);
-  }
-  window.addEventListener('popstate', function () { show(splash); });
-
   function vibrate(ms) { if (SET.vib && navigator.vibrate) navigator.vibrate(ms); }
 
   // ---------- Keep screen awake while counting ----------
@@ -644,7 +631,7 @@
   });
 
   document.getElementById('startBtn').addEventListener('click', function () {
-    goSub(counter);
+    show(counter);
     render();
   });
 
@@ -694,7 +681,7 @@
     count = 0;
     save();
     render();
-    goHome();
+    show(splash);
   });
 
   // ---------- Daily verse (rotates deterministically by date) ----------
@@ -1104,8 +1091,8 @@
     fitVerse();
   }
 
-  document.getElementById('gearBtn').addEventListener('click', function () { goSub(settings); });
-  document.getElementById('backBtn').addEventListener('click', function () { goHome(); });
+  document.getElementById('gearBtn').addEventListener('click', function () { show(settings); });
+  document.getElementById('backBtn').addEventListener('click', function () { show(splash); });
 
   // ---------- Auto-fit a nowrap line to its container ----------
   function fitLine(el) {
