@@ -443,12 +443,18 @@
     if (!t && !last) { el.textContent = ''; return; }
     var parts = [t.toLocaleString() + ' counts in a lifetime', c + ' goal' + (c === 1 ? '' : 's') + ' reached'];
     if (last) {
-      var p = last.split('-');
-      var d = new Date(+p[0], +p[1] - 1, +p[2]);
-      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      var months = ['January', 'February', 'March', 'April', 'May', 'June',
-                    'July', 'August', 'September', 'October', 'November', 'December'];
-      parts.push('last on ' + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + ordinal(d.getDate()));
+      if (last === today()) {
+        parts.push('last today');
+      } else if (last === yesterday()) {
+        parts.push('last yesterday');
+      } else {
+        var p = last.split('-');
+        var d = new Date(+p[0], +p[1] - 1, +p[2]);
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var months = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+        parts.push('last on ' + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + ordinal(d.getDate()));
+      }
     }
     el.textContent = parts.join(', ') + '.';
   }
