@@ -432,7 +432,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.4.0';
+  var APP_VERSION = '1.4.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true };
@@ -601,6 +601,18 @@
     if (el === counter) requestWake(); else releaseWake();
   }
 
+  // Force true fullscreen in the installed app: enter on the first tap and
+  // re-enter any time the system bars come back. No effect in a browser tab.
+  function ensureFullscreen() {
+    var isApp = window.matchMedia &&
+      (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches);
+    if (!isApp || document.fullscreenElement) return;
+    var el = document.documentElement;
+    var req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) { try { var r = req.call(el); if (r && r.catch) r.catch(function () {}); } catch (e) {} }
+  }
+  document.addEventListener('pointerdown', ensureFullscreen);
+
   function vibrate(ms) { if (SET.vib && navigator.vibrate) navigator.vibrate(ms); }
 
   // ---------- Keep screen awake while counting ----------
@@ -631,6 +643,7 @@
   });
 
   document.getElementById('startBtn').addEventListener('click', function () {
+    ensureFullscreen();
     show(counter);
     render();
   });
