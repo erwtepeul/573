@@ -270,6 +270,23 @@
     color: var(--gold-light); opacity: 0.7;
     letter-spacing: 0.5px;
   }
+  .backup-row {
+    position: absolute; bottom: max(10px, env(safe-area-inset-bottom));
+    left: 0; right: 0; text-align: center; direction: ltr;
+    font-family: 'Poppins', sans-serif; font-size: 0.6rem; font-weight: 300;
+    color: var(--gold-light); opacity: 0.55;
+  }
+  .link-btn {
+    background: none; border: none; color: inherit; font: inherit;
+    cursor: pointer; padding: 2px 6px;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .ver {
+    position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); right: 12px;
+    direction: ltr; font-family: 'Poppins', sans-serif;
+    font-size: 0.55rem; font-weight: 300;
+    color: var(--gold-light); opacity: 0.4;
+  }
   .streak {
     font-family: 'Poppins', sans-serif;
     font-size: 0.8rem; color: var(--gold-light);
@@ -312,6 +329,13 @@
     <div class="presets" id="presets"></div>
     <button class="start-btn" id="startBtn">Start</button>
     <div class="last-done" id="summary"></div>
+    <div class="backup-row">
+      <button class="link-btn" id="backupBtn" type="button">Backup</button>
+      <span>·</span>
+      <button class="link-btn" id="restoreBtn" type="button">Restore</button>
+    </div>
+    <div class="ver" id="ver"></div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none">
   </div>
 
   <!-- Counter -->
@@ -352,6 +376,8 @@
 
 <script>
 (function () {
+  var APP_VERSION = '1.1.0';
+
   // ---- Dhikr presets (each keeps its own progress) ----
   var PRESETS = [
     { id: 'zikr',   ar: 'ذِكْر',            label: 'Zikr',          target: 573 },
@@ -791,6 +817,48 @@
     }
   }
 
+  // ---- Version indicator ----
+  document.getElementById('ver').textContent = 'v' + APP_VERSION;
+
+  // ---- Backup & restore ----
+  document.getElementById('backupBtn').addEventListener('click', function () {
+    var data = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('zikr-') === 0) data[k] = localStorage.getItem(k);
+      }
+    } catch (e) {}
+    var payload = { app: 'zikr-counter', version: APP_VERSION, exported: new Date().toISOString(), data: data };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'zikr-backup-' + today() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+  });
+
+  var importInput = document.getElementById('importFile');
+  document.getElementById('restoreBtn').addEventListener('click', function () { importInput.click(); });
+  importInput.addEventListener('change', function () {
+    var f = importInput.files && importInput.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var obj = JSON.parse(r.result);
+        if (!obj || obj.app !== 'zikr-counter' || !obj.data) { alert('Not a valid backup file.'); return; }
+        for (var k in obj.data) {
+          if (k.indexOf('zikr-') === 0) localStorage.setItem(k, String(obj.data[k]));
+        }
+        location.reload();
+      } catch (e) { alert('Could not read the backup file.'); }
+    };
+    r.readAsText(f);
+  });
+
   // ---- PWA service worker (no-op when opened as a plain file) ----
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     navigator.serviceWorker.register('sw.js').catch(function () {});
@@ -818,4 +886,3 @@
 </script>
 </body>
 </html>
-                                                                                                                
