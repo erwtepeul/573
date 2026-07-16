@@ -12,12 +12,15 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --green-dark: #161628;
     --green: #22223f;
     --green-light: #32325c;
+    --bg1: #32325c;
+    --bg2: #22223f;
+    --bg3: #161628;
     --gold: #d4af37;
     --gold-light: #f0d98c;
     --cream: #faf6ec;
@@ -26,7 +29,7 @@
   html, body { height: 100%; overflow: hidden; }
   body {
     font-family: 'Amiri', serif;
-    background: radial-gradient(ellipse at 50% 20%, var(--green-light) 0%, var(--green) 45%, var(--green-dark) 100%);
+    background: radial-gradient(ellipse at 50% 20%, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
     color: var(--cream);
     display: flex;
     align-items: center;
@@ -35,7 +38,15 @@
     -webkit-user-select: none;
     touch-action: manipulation;
   }
-  /* Geometric Islamic pattern overlay */
+  /* Color themes: background only; frame, buttons and gold stay the same */
+  body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; }
+  body[data-theme="green"] { --bg1: #1d4a33; --bg2: #123524; --bg3: #0b1f14; }
+  /* Urdu script mode: Nastaliq typeface for Urdu text */
+  body[data-script="ur"] .verse-urdu { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; font-size: 1.3rem; line-height: 2.5; }
+  body[data-script="ur"] .done-msg,
+  body[data-script="ur"] .frame-top,
+  body[data-script="ur"] .p-ar { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; }
+  /* Geometric Islamic pattern overlay (kept in all themes) */
   body::before {
     content: "";
     position: fixed; inset: 0;
@@ -143,6 +154,42 @@
     cursor: pointer;
   }
   .start-btn:active { transform: scale(0.96); }
+
+  .gear {
+    position: absolute; z-index: 6;
+    top: max(26px, env(safe-area-inset-top)); right: 24px;
+    background: none; border: none; cursor: pointer;
+    color: var(--gold); font-size: 1.35rem; line-height: 1;
+    opacity: 0.75;
+  }
+  .gear:active { opacity: 1; }
+
+  /* ---------- Settings ---------- */
+  .set-title { font-family: 'Amiri', serif; font-size: 1.5rem; color: var(--gold-light); margin-bottom: 26px; }
+  .set-rows { width: 100%; max-width: 340px; }
+  .set-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; padding: 13px 2px;
+    border-bottom: 1px solid rgba(212,175,55,0.15);
+  }
+  .set-label {
+    direction: ltr; text-align: left;
+    font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 300;
+    color: var(--cream);
+  }
+  .seg { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .seg button {
+    font-family: 'Poppins', sans-serif; font-size: 0.7rem; font-weight: 300;
+    padding: 6px 13px; border-radius: 20px;
+    border: 1px solid rgba(212,175,55,0.4);
+    background: rgba(0,0,0,0.15);
+    color: var(--gold-light); cursor: pointer;
+  }
+  .seg button.sel {
+    border-color: rgba(255,224,102,0.9);
+    background: rgba(212,175,55,0.18);
+    color: var(--cream);
+  }
 
   /* ---------- Counter ---------- */
   #counter { padding-top: 14vh; }
@@ -311,6 +358,7 @@
 
   <!-- Splash: Quran verse -->
   <div id="splash" class="screen">
+    <button class="gear" id="gearBtn" type="button" aria-label="settings">⚙</button>
     <div class="crescent">☪</div>
     <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
     <div class="verse-urdu" id="verseUrdu"></div>
@@ -320,6 +368,13 @@
     <button class="start-btn" id="startBtn">Start</button>
     <div class="last-done" id="summary"></div>
     <div class="ver" id="ver"></div>
+  </div>
+
+  <!-- Settings -->
+  <div id="settings" class="screen hidden">
+    <div class="set-title" id="setTitle">Settings</div>
+    <div class="set-rows" id="setRows"></div>
+    <button class="start-btn" id="backBtn" style="margin-top:36px;">Back</button>
   </div>
 
   <!-- Counter -->
@@ -335,7 +390,7 @@
         <span class="count-target" id="countTargetEl">/ 573</span>
       </button>
     </div>
-    <div class="tap-hint" style="font-family:'Poppins',sans-serif;font-size:0.8rem;">Tap the circle to count</div>
+    <div class="tap-hint" id="tapHint" style="font-family:'Poppins',sans-serif;font-size:0.8rem;">Tap the circle to count</div>
     <div class="btn-row">
       <button class="reset-btn" id="undoBtn">&minus; 1</button>
       <button class="reset-btn" id="resetBtn">Reset</button>
@@ -351,8 +406,8 @@
       <div class="star-icon">۞</div>
     </div>
     <div class="rule">✦</div>
-    <div class="done-msg">الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ</div>
-    <div class="done-msg-en">"All praise is due to Allah, by whose grace good deeds are completed."</div>
+    <div class="done-msg" id="duaAr">الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ</div>
+    <div class="done-msg-en" id="duaTr">"All praise is due to Allah, by whose grace good deeds are completed."</div>
     <div class="rule">✦</div>
     <div class="streak" id="streakDone" style="margin-top:22px;">۞ Streak: <b>0</b> days</div>
     <button class="start-btn" id="againBtn" style="margin-top:8vh;">Start Again</button>
@@ -360,14 +415,61 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.2.4';
+  var APP_VERSION = '1.3.0';
 
-  // ---- Dhikr presets (each keeps its own progress) ----
+  // ---------- Settings ----------
+  var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true };
+  try {
+    var st = JSON.parse(localStorage.getItem('zikr-settings') || '{}');
+    for (var sk in SET) if (st[sk] !== undefined) SET[sk] = st[sk];
+  } catch (e) {}
+  function saveSet() { try { localStorage.setItem('zikr-settings', JSON.stringify(SET)); } catch (e) {} }
+
+  var STR = {
+    en: {
+      start: 'Start', again: 'Start Again', reset: 'Reset',
+      tap: 'Tap the circle to count',
+      confirmReset: 'Reset the counter to zero?',
+      streak: 'Streak', day: 'day', days: 'days',
+      counts: 'counts in a lifetime', goal: 'goal reached', goals: 'goals reached',
+      lastToday: 'last today', lastYesterday: 'last yesterday', lastOn: 'last on',
+      settings: 'Settings', language: 'Language', script: 'Script', theme: 'Theme',
+      vibration: 'Vibration', milestone: 'Milestone every', showTrans: 'Show translation',
+      back: 'Back', on: 'On', off: 'Off',
+      blue: 'Blue', black: 'Black', green: 'Green',
+      wd: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      mo: ['January', 'February', 'March', 'April', 'May', 'June',
+           'July', 'August', 'September', 'October', 'November', 'December'],
+      fmtDate: function (d) {
+        var s = ['th', 'st', 'nd', 'rd'], v = d.getDate() % 100;
+        return this.wd[d.getDay()] + ', ' + this.mo[d.getMonth()] + ' ' + d.getDate() + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+    },
+    nl: {
+      start: 'Start', again: 'Opnieuw beginnen', reset: 'Reset',
+      tap: 'Tik op de cirkel om te tellen',
+      confirmReset: 'Teller op nul zetten?',
+      streak: 'Reeks', day: 'dag', days: 'dagen',
+      counts: 'tellingen in totaal', goal: 'doel bereikt', goals: 'doelen bereikt',
+      lastToday: 'laatst vandaag', lastYesterday: 'laatst gisteren', lastOn: 'laatst op',
+      settings: 'Instellingen', language: 'Taal', script: 'Schrift', theme: 'Thema',
+      vibration: 'Trillen', milestone: 'Mijlpaal elke', showTrans: 'Vertaling tonen',
+      back: 'Terug', on: 'Aan', off: 'Uit',
+      blue: 'Blauw', black: 'Zwart', green: 'Groen',
+      wd: ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+      mo: ['januari', 'februari', 'maart', 'april', 'mei', 'juni',
+           'juli', 'augustus', 'september', 'oktober', 'november', 'december'],
+      fmtDate: function (d) { return this.wd[d.getDay()] + ' ' + d.getDate() + ' ' + this.mo[d.getMonth()]; }
+    }
+  };
+  function T() { return STR[SET.lang] || STR.en; }
+
+  // ---------- Dhikr presets (each keeps its own progress) ----------
   var PRESETS = [
-    { id: 'zikr',   ar: 'ذِكْر',            label: 'Zikr',          target: 573 },
-    { id: 'subhan', ar: 'سُبْحَانَ اللَّهِ', label: 'SubhanAllah',   target: 33 },
-    { id: 'hamd',   ar: 'الْحَمْدُ لِلَّهِ', label: 'Alhamdulillah', target: 33 },
-    { id: 'akbar',  ar: 'اللَّهُ أَكْبَرُ',  label: 'Allahu Akbar',  target: 34 }
+    { id: 'zikr',   ar: 'ذِكْر',             ur: 'ذِکر',        label: 'Zikr',          target: 573 },
+    { id: 'subhan', ar: 'سُبْحَانَ اللَّهِ',  ur: 'سبحان اللہ',  label: 'SubhanAllah',   target: 33 },
+    { id: 'hamd',   ar: 'الْحَمْدُ لِلَّهِ',  ur: 'الحمد للہ',   label: 'Alhamdulillah', target: 33 },
+    { id: 'akbar',  ar: 'اللَّهُ أَكْبَرُ',   ur: 'اللہ اکبر',   label: 'Allahu Akbar',  target: 34 }
   ];
   var preset = PRESETS[0];
   try {
@@ -378,7 +480,6 @@
   var CIRC = 2 * Math.PI * 112;
 
   function countKey() { return 'zikr-count-' + preset.id; }
-  // migrate pre-preset storage
   try {
     var old = localStorage.getItem('zikr-count');
     if (old !== null && localStorage.getItem('zikr-count-zikr') === null) {
@@ -389,25 +490,25 @@
   function loadCount() {
     var c = 0;
     try { c = Math.min(TARGET, parseInt(localStorage.getItem(countKey()) || '0', 10) || 0); } catch (e) {}
-    // If a previous session ended at the goal, start fresh instead of jumping to the done screen
     return (c >= TARGET) ? 0 : c;
   }
   var count = loadCount();
 
-  // ---- Lifetime stats ----
+  // ---------- Lifetime stats ----------
   function getN(key) { try { return parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) { return 0; } }
   function bump(key, d) { try { localStorage.setItem(key, String(Math.max(0, getN(key) + d))); } catch (e) {} }
 
   var splash = document.getElementById('splash');
   var counter = document.getElementById('counter');
   var done = document.getElementById('done');
+  var settings = document.getElementById('settings');
   var countNum = document.getElementById('countNum');
   var ringFg = document.getElementById('ringFg');
   ringFg.style.strokeDasharray = CIRC;
 
   function save() { try { localStorage.setItem(countKey(), String(count)); } catch (e) {} }
 
-  // ---- Streak ----
+  // ---------- Streak ----------
   function localDate(d) {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
@@ -418,7 +519,6 @@
     try {
       var last = localStorage.getItem('zikr-last-done');
       var s = parseInt(localStorage.getItem('zikr-streak') || '0', 10) || 0;
-      // streak is alive only if goal was reached today or yesterday
       if (last === today() || last === yesterday()) return s;
       return 0;
     } catch (e) { return 0; }
@@ -427,7 +527,7 @@
   function recordCompletion() {
     try {
       var last = localStorage.getItem('zikr-last-done');
-      if (last === today()) return; // already counted today
+      if (last === today()) return;
       var s = (last === yesterday()) ? getStreak() + 1 : 1;
       localStorage.setItem('zikr-streak', String(s));
       localStorage.setItem('zikr-last-done', today());
@@ -435,36 +535,28 @@
   }
 
   function renderStreak() {
+    var t = T();
     var s = getStreak();
     document.getElementById('streakDone').innerHTML =
-      '۞ Streak: <b>' + s + '</b> ' + (s === 1 ? 'day' : 'days');
+      '۞ ' + t.streak + ': <b>' + s + '</b> ' + (s === 1 ? t.day : t.days);
   }
 
-  function ordinal(n) {
-    var s = ['th', 'st', 'nd', 'rd'], v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  }
+  function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
 
   function renderSummary() {
+    var t = T();
     var el = document.getElementById('summary');
-    var t = getN('zikr-total'), c = getN('zikr-completions');
+    var total = getN('zikr-total'), c = getN('zikr-completions');
     var last = null;
     try { last = localStorage.getItem('zikr-last-done'); } catch (e) {}
-    if (!t && !last) { el.textContent = ''; return; }
-    function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
-    var parts = [fmt(t) + ' counts in a lifetime', fmt(c) + ' goal' + (c === 1 ? '' : 's') + ' reached'];
+    if (!total && !last) { el.textContent = ''; return; }
+    var parts = [fmt(total) + ' ' + t.counts, fmt(c) + ' ' + (c === 1 ? t.goal : t.goals)];
     if (last) {
-      if (last === today()) {
-        parts.push('last today');
-      } else if (last === yesterday()) {
-        parts.push('last yesterday');
-      } else {
+      if (last === today()) parts.push(t.lastToday);
+      else if (last === yesterday()) parts.push(t.lastYesterday);
+      else {
         var p = last.split('-');
-        var d = new Date(+p[0], +p[1] - 1, +p[2]);
-        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        var months = ['January', 'February', 'March', 'April', 'May', 'June',
-                      'July', 'August', 'September', 'October', 'November', 'December'];
-        parts.push('last on ' + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + ordinal(d.getDate()));
+        parts.push(t.lastOn + ' ' + t.fmtDate(new Date(+p[0], +p[1] - 1, +p[2])));
       }
     }
     el.textContent = parts.join(', ') + '.';
@@ -473,12 +565,11 @@
   function render() {
     countNum.textContent = count;
     ringFg.style.strokeDashoffset = CIRC * (1 - count / TARGET);
-    // ring brightness grows with progress: dark gold -> ultra bright near the goal
     var t = Math.pow(Math.min(1, count / TARGET), 1.6);
     function lerp(a, b) { return Math.round(a + (b - a) * t); }
     ringFg.style.stroke = 'rgb(' + lerp(138, 255) + ',' + lerp(109, 244) + ',' + lerp(34, 189) + ')';
     ringFg.style.filter = 'drop-shadow(0 0 ' + (2 + 14 * t).toFixed(1) + 'px rgba(255,224,102,' + (0.15 + 0.85 * t).toFixed(2) + '))';
-    document.getElementById('dhikrName').textContent = preset.ar;
+    document.getElementById('dhikrName').textContent = SET.script === 'ur' ? preset.ur : preset.ar;
     document.getElementById('countTargetEl').textContent = '/ ' + TARGET;
     renderStreak();
     renderSummary();
@@ -488,13 +579,14 @@
     splash.classList.add('hidden');
     counter.classList.add('hidden');
     done.classList.add('hidden');
+    settings.classList.add('hidden');
     el.classList.remove('hidden');
     if (el === counter) requestWake(); else releaseWake();
   }
 
-  function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+  function vibrate(ms) { if (SET.vib && navigator.vibrate) navigator.vibrate(ms); }
 
-  // ---- Keep screen awake while counting ----
+  // ---------- Keep screen awake while counting ----------
   var wakeLock = null;
   function requestWake() {
     if ('wakeLock' in navigator) {
@@ -506,16 +598,15 @@
   function releaseWake() {
     if (wakeLock) { wakeLock.release().catch(function () {}); wakeLock = null; }
   }
-  // Wake lock is lost when the tab goes to background — re-acquire on return
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible' && !counter.classList.contains('hidden')) requestWake();
   });
 
-  // ---- Milestone pulse every 100 ----
+  // ---------- Milestone pulse ----------
   var countWrap = document.querySelector('.count-wrap');
   function milestonePulse() {
     countWrap.classList.remove('milestone');
-    void countWrap.offsetWidth; // restart animation
+    void countWrap.offsetWidth;
     countWrap.classList.add('milestone');
   }
   countWrap.addEventListener('animationend', function () {
@@ -533,7 +624,7 @@
     save();
     bump('zikr-total', 1);
     render();
-    if (count < TARGET && count % 100 === 0) {
+    if (count < TARGET && count % SET.mile === 0) {
       vibrate([60, 40, 60]);
       milestonePulse();
     } else {
@@ -546,7 +637,7 @@
       vibrate([80, 60, 80]);
       setTimeout(function () {
         show(done);
-        fitLine(document.querySelector('.done-msg-en'));
+        fitLine(document.getElementById('duaTr'));
         starBurst();
       }, 350);
     }
@@ -567,225 +658,435 @@
     vibrate(10);
   });
   document.getElementById('resetBtn').addEventListener('click', function () {
-    if (confirm('Reset the counter to zero?')) reset();
+    if (confirm(T().confirmReset)) reset();
   });
   document.getElementById('againBtn').addEventListener('click', reset);
 
-  // ---- Daily verse (rotates deterministically by date) ----
+  // ---------- Daily verse (rotates deterministically by date) ----------
+  // ar: Qur'an text (quran.com, imlaei script) | ur: Fatah Muhammad Jalandhari | nl: Sofian S. Siregar
   var VERSES = [
     { ar: 'فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ',
+      ur: 'پس تم مجھے یاد کرو، میں تمہیں یاد رکھوں گا، اور میرا شکر ادا کرو اور ناشکری نہ کرو',
       en: '"So remember Me; I will remember you. And be grateful to Me and do not deny Me."',
+      nl: '"Gedenkt Mij, dan zal Ik jullie gedenken, en weest Mij dankbaar en weest Mij niet ondankbaar."',
       ref: "Qur'an — Surah Al-Baqarah 2:152" },
     { ar: 'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
+      ur: 'سن لو! اللہ کے ذکر ہی سے دلوں کو اطمینان نصیب ہوتا ہے',
       en: '"Verily, in the remembrance of Allah do hearts find rest."',
+      nl: '"Weet: door het gedenken van Allah komen de harten tot rust."',
       ref: "Qur'an — Surah Ar-Ra'd 13:28" },
     { ar: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
+      ur: 'بے شک مشکل کے ساتھ آسانی ہے',
       en: '"Indeed, with hardship comes ease."',
+      nl: '"Voorwaar, met de moeilijkheid komt de verlichting."',
       ref: "Qur'an — Surah Ash-Sharh 94:6" },
     { ar: 'فَإِنِّي قَرِيبٌ ۖ أُجِيبُ دَعْوَةَ الدَّاعِ إِذَا دَعَانِ',
+      ur: 'میں قریب ہوں، پکارنے والے کی پکار کا جواب دیتا ہوں جب وہ مجھے پکارے',
       en: '"I am near; I respond to the invocation of the supplicant when he calls upon Me."',
+      nl: '"Voorwaar, Ik ben nabij: Ik verhoor de smeekbede van de smekende wanneer hij tot Mij smeekt."',
       ref: "Qur'an — Surah Al-Baqarah 2:186" },
     { ar: 'لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا',
+      ur: 'اللہ کی رحمت سے مایوس نہ ہو، بے شک اللہ سارے گناہ معاف فرما دیتا ہے',
       en: '"Do not despair of the mercy of Allah. Indeed, Allah forgives all sins."',
+      nl: '"Wanhoopt niet aan de Genade van Allah. Voorwaar, Allah vergeeft alle zonden."',
       ref: "Qur'an — Surah Az-Zumar 39:53" },
     { ar: 'لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
+      ur: 'اگر تم شکر ادا کرو گے تو میں تمہیں اور زیادہ عطا کروں گا',
       en: '"If you are grateful, I will surely increase you [in favour]."',
+      nl: '"Als jullie dankbaar zijn, dan zullen Wij zeker jullie (genietingen) vermeerderen."',
       ref: "Qur'an — Surah Ibrahim 14:7" },
     { ar: 'وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ',
+      ur: 'اور جو اللہ پر بھروسا کرے تو وہ اس کے لیے کافی ہے',
       en: '"And whoever relies upon Allah — He is sufficient for him."',
+      nl: '"En wie op Allah vertrouwt — Hij is voor hem voldoende."',
       ref: "Qur'an — Surah At-Talaq 65:3" },
     { ar: 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
+      ur: 'ہم صرف تیری ہی عبادت کرتے ہیں اور صرف تجھ ہی سے مدد مانگتے ہیں',
       en: '"It is You we worship and You we ask for help."',
+      nl: '"U alleen aanbidden wij en U alleen vragen wij om hulp."',
       ref: "Qur'an — Surah Al-Fatihah 1:5" },
     { ar: 'وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ',
+      ur: 'اور صبر اور نماز کے ذریعے مدد مانگو',
       en: '"And seek help through patience and prayer."',
+      nl: '"En vraagt (Allah) om hulp door middel van geduld en de shalât."',
       ref: "Qur'an — Surah Al-Baqarah 2:45" },
     { ar: 'لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا',
+      ur: 'اللہ کسی جان پر اس کی طاقت سے بڑھ کر بوجھ نہیں ڈالتا',
       en: '"Allah does not burden a soul beyond that it can bear."',
+      nl: '"Allah belast niemand dan volgens zijn vermogen."',
       ref: "Qur'an — Surah Al-Baqarah 2:286" },
     { ar: 'إِنَّ اللَّهَ يُحِبُّ الْمُتَوَكِّلِينَ',
+      ur: 'بے شک اللہ توکل کرنے والوں سے محبت کرتا ہے',
       en: '"Indeed, Allah loves those who rely upon Him."',
+      nl: '"Voorwaar, Allah houdt van degenen die (op Hem) vertrouwen."',
       ref: "Qur'an — Surah Aal-e-Imran 3:159" },
     { ar: 'إِنَّ اللَّهَ مَعَ الصَّابِرِينَ',
+      ur: 'بے شک اللہ صبر کرنے والوں کے ساتھ ہے',
       en: '"Indeed, Allah is with the patient."',
+      nl: '"Voorwaar, Allah is met de geduldigen."',
       ref: "Qur'an — Surah Al-Baqarah 2:153" },
     { ar: 'إِنَّ اللَّهَ مَعَ الَّذِينَ اتَّقَوا وَّالَّذِينَ هُم مُّحْسِنُونَ',
+      ur: 'بے شک اللہ ان کے ساتھ ہے جو پرہیزگار ہیں اور نیکی کرنے والے ہیں',
       en: '"Indeed, Allah is with those who fear Him and those who do good."',
+      nl: '"Voorwaar, Allah is met degenen die (Hem) vrezen en met degenen die weldoeners zijn."',
       ref: "Qur'an — Surah An-Nahl 16:128" },
     { ar: 'وَلَسَوْفَ يُعْطِيكَ رَبُّكَ فَتَرْضَىٰ',
+      ur: 'اور عنقریب آپ کا رب آپ کو اتنا عطا فرمائے گا کہ آپ راضی ہو جائیں گے',
       en: '"And your Lord is going to give you, and you will be satisfied."',
+      nl: '"En jouw Heer zal jou zeker gunsten schenken, zodat jij tevreden zult zijn."',
       ref: "Qur'an — Surah Ad-Duha 93:5" },
     { ar: 'فَبِأَيِّ آلَاءِ رَبِّكُمَا تُكَذِّبَانِ',
+      ur: 'پس تم اپنے رب کی کون کون سی نعمتوں کو جھٹلاؤ گے؟',
       en: '"So which of the favours of your Lord would you deny?"',
+      nl: '"Welke gunsten van jullie Heer loochenen jullie dan?"',
       ref: "Qur'an — Surah Ar-Rahman 55:13" },
     { ar: 'وَقُل رَّبِّ زِدْنِي عِلْمًا',
+      ur: 'اے میرے رب! میرے علم میں اضافہ فرما',
       en: '"My Lord, increase me in knowledge."',
+      nl: '"Mijn Heer, vermeerder mijn kennis."',
       ref: "Qur'an — Surah Ta-Ha 20:114" },
     { ar: 'حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ',
+      ur: 'ہمیں اللہ کافی ہے اور وہ بہترین کارساز ہے',
       en: '"Sufficient for us is Allah, and He is the best Disposer of affairs."',
+      nl: '"Allah is ons genoeg en Hij is de beste Beschermer."',
       ref: "Qur'an — Surah Aal-e-Imran 3:173" },
     { ar: 'اللَّهُ نُورُ السَّمَاوَاتِ وَالْأَرْضِ',
+      ur: 'اللہ آسمانوں اور زمین کا نور ہے',
       en: '"Allah is the Light of the heavens and the earth."',
+      nl: '"Allah geeft het licht aan de hemelen en de aarde."',
       ref: "Qur'an — Surah An-Nur 24:35" },
     { ar: 'وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْ حَبْلِ الْوَرِيدِ',
+      ur: 'اور ہم اس کی شہ رگ سے بھی زیادہ اس کے قریب ہیں',
       en: '"And We are closer to him than his jugular vein."',
+      nl: '"En Wij zijn dichter bij hem dan zijn halsslagader."',
       ref: "Qur'an — Surah Qaf 50:16" },
     { ar: 'إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ',
+      ur: 'بے شک اللہ توبہ کرنے والوں سے محبت کرتا ہے',
       en: '"Indeed, Allah loves those who repent."',
+      nl: '"Voorwaar, Allah heeft de berouwvollen lief."',
       ref: "Qur'an — Surah Al-Baqarah 2:222" },
     { ar: 'وَالَّذِينَ جَاهَدُوا فِينَا لَنَهْدِيَنَّهُمْ سُبُلَنَا',
+      ur: 'اور جو ہماری راہ میں کوشش کرتے ہیں ہم انہیں ضرور اپنے راستے دکھائیں گے',
       en: '"And those who strive for Us — We will surely guide them to Our ways."',
+      nl: '"En degenen die omwille van Ons streven, die zullen Wij zeker Leiding schenken op Onze wegen."',
       ref: "Qur'an — Surah Al-Ankabut 29:69" },
     { ar: 'اللَّهُ لَطِيفٌ بِعِبَادِهِ',
+      ur: 'اللہ اپنے بندوں پر بڑا مہربان ہے',
       en: '"Allah is Kind to His servants."',
+      nl: '"Allah is Zachtmoedig voor Zijn dienaren."',
       ref: "Qur'an — Surah Ash-Shura 42:19" },
     { ar: 'الَّذِي خَلَقَ الْمَوْتَ وَالْحَيَاةَ لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا',
+      ur: 'جس نے موت اور زندگی کو پیدا کیا تاکہ تمہیں آزمائے کہ تم میں کون اچھے عمل کرتا ہے',
       en: '"He who created death and life to test which of you is best in deed."',
+      nl: '"Degene Die de dood en het leven heeft geschapen om jullie te beproeven: wie van jullie de beste daden verricht."',
       ref: "Qur'an — Surah Al-Mulk 67:2" },
     { ar: 'قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ',
+      ur: 'کہہ دو: وہ اللہ ایک ہے، اللہ بے نیاز ہے',
       en: '"Say: He is Allah, the One; Allah, the Eternal Refuge."',
+      nl: '"Zeg: Hij is Allah, de Enige. Allah is de Enige van Wie al het geschapene afhankelijk is."',
       ref: "Qur'an — Surah Al-Ikhlas 112:1-2" },
     { ar: 'وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ',
+      ur: 'اور میری توفیق اللہ ہی سے ہے',
       en: '"And my success is only through Allah."',
+      nl: '"En mijn welslagen is slechts bij Allah."',
       ref: "Qur'an — Surah Hud 11:88" },
     { ar: 'ادْعُونِي أَسْتَجِبْ لَكُمْ',
+      ur: 'مجھ سے دعا کرو، میں تمہاری دعا قبول کروں گا',
       en: '"Call upon Me; I will respond to you."',
+      nl: '"Roept Mij aan, Ik zal jullie verhoren."',
       ref: "Qur'an — Surah Ghafir 40:60" },
     { ar: 'وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ',
+      ur: 'ممکن ہے تم کسی چیز کو ناپسند کرو اور وہ تمہارے لیے بہتر ہو',
       en: '"Perhaps you hate a thing and it is good for you."',
+      nl: '"Maar het kan zijn dat jullie afkeer van iets hebben, terwijl het goed is voor jullie."',
       ref: "Qur'an — Surah Al-Baqarah 2:216" },
     { ar: 'يَا أَيُّهَا الَّذِينَ آمَنُوا اذْكُرُوا اللَّهَ ذِكْرًا كَثِيرًا',
+      ur: 'اے ایمان والو! اللہ کو کثرت سے یاد کرو',
       en: '"O you who believe, remember Allah with much remembrance."',
+      nl: '"O jullie die geloven, gedenkt Allah veelvuldig!"',
       ref: "Qur'an — Surah Al-Ahzab 33:41" },
     { ar: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ',
+      ur: 'خدا، اس کے سوا کوئی عبادت کے لائق نہیں، زندہ، ہمیشہ رہنے والا',
       en: '"Allah — there is no deity except Him, the Ever-Living, the Sustainer of existence."',
+      nl: '"Allah, er is geen god dan Hij, de Levende, de Zelfstandige."',
       ref: "Qur'an — Surah Al-Baqarah 2:255" },
     { ar: 'اللَّهُ وَلِيُّ الَّذِينَ آمَنُوا يُخْرِجُهُم مِّنَ الظُّلُمَاتِ إِلَى النُّورِ',
+      ur: 'جو لوگ ایمان لائے ہیں ان کا دوست خدا ہے کہ ان کو اندھیرے سے نکال کر روشنی میں لے جاتا ہے',
       en: '"Allah is the ally of those who believe; He brings them out of darkness into the light."',
+      nl: '"Allah is de Helper van degenen die geloven. Hij voert hen van de duisternis naar het licht."',
       ref: "Qur'an — Surah Al-Baqarah 2:257" },
     { ar: 'وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ',
+      ur: 'بے دل نہ ہونا اور نہ کسی طرح کا غم کرنا، اگر تم مومن ہو تو تم ہی غالب رہو گے',
       en: '"Do not weaken and do not grieve, for you will be superior if you are believers."',
+      nl: '"Voelt jullie niet vernederd en treurt niet: jullie zijn de winnaars, indien jullie (ware) gelovigen zijn."',
       ref: "Qur'an — Surah Aal-e-Imran 3:139" },
     { ar: 'لَا تَحْزَنْ إِنَّ اللَّهَ مَعَنَا',
+      ur: 'غم نہ کرو، خدا ہمارے ساتھ ہے',
       en: '"Do not grieve; indeed Allah is with us."',
+      nl: '"Treur niet, voorwaar, Allah is met ons."',
       ref: "Qur'an — Surah At-Tawbah 9:40" },
     { ar: 'أَلَا إِنَّ أَوْلِيَاءَ اللَّهِ لَا خَوْفٌ عَلَيْهِمْ وَلَا هُمْ يَحْزَنُونَ',
+      ur: 'سن رکھو کہ جو خدا کے دوست ہیں ان کو نہ کچھ خوف ہوگا اور نہ وہ غمناک ہوں گے',
       en: '"Unquestionably, the allies of Allah — no fear will there be concerning them, nor will they grieve."',
+      nl: '"Voorwaar, er zal geen vrees over de geliefden van Allah komen en zij zullen niet treuren."',
       ref: "Qur'an — Surah Yunus 10:62" },
     { ar: 'وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ',
+      ur: 'اور خدا کی رحمت سے ناامید نہ ہو',
       en: '"And do not despair of relief from Allah."',
+      nl: '"En wanhoopt niet aan de Genade van Allah."',
       ref: "Qur'an — Surah Yusuf 12:87" },
     { ar: 'مَنْ عَمِلَ صَالِحًا مِّن ذَكَرٍ أَوْ أُنثَىٰ وَهُوَ مُؤْمِنٌ فَلَنُحْيِيَنَّهُ حَيَاةً طَيِّبَةً',
+      ur: 'جو شخص نیک اعمال کرے گا، مرد ہو یا عورت، وہ مومن بھی ہوگا، تو ہم اس کو پاک زندگی سے زندہ رکھیں گے',
       en: '"Whoever does righteousness, male or female, while a believer — We will surely give them a good life."',
+      nl: '"Wie het goede doet, man of vrouw, en hij gelooft: voorwaar, aan hem geven Wij een goed leven."',
       ref: "Qur'an — Surah An-Nahl 16:97" },
     { ar: 'إِنَّمَا يُوَفَّى الصَّابِرُونَ أَجْرَهُم بِغَيْرِ حِسَابٍ',
+      ur: 'جو صبر کرنے والے ہیں ان کو بےشمار ثواب ملے گا',
       en: '"Indeed, the patient will be given their reward without account."',
+      nl: '"Voorwaar, het zijn de geduldigen die hun beloning zonder berekening zal worden gegeven."',
       ref: "Qur'an — Surah Az-Zumar 39:10" },
     { ar: 'وَهُوَ مَعَكُمْ أَيْنَ مَا كُنتُمْ',
+      ur: 'اور تم جہاں کہیں ہو وہ تمہارے ساتھ ہے',
       en: '"And He is with you wherever you are."',
+      nl: '"En Hij is met jullie, waar jullie ook zijn."',
       ref: "Qur'an — Surah Al-Hadid 57:4" },
     { ar: 'لَا تَخَافَا ۖ إِنَّنِي مَعَكُمَا أَسْمَعُ وَأَرَىٰ',
+      ur: 'ڈرو مت، میں تمہارے ساتھ ہوں، سنتا اور دیکھتا ہوں',
       en: '"Fear not. Indeed, I am with you both; I hear and I see."',
+      nl: '"Weest niet bang. Voorwaar, Ik ben met jullie beiden, Ik hoor en Ik zie."',
       ref: "Qur'an — Surah Ta-Ha 20:46" },
     { ar: 'وَأُفَوِّضُ أَمْرِي إِلَى اللَّهِ ۚ إِنَّ اللَّهَ بَصِيرٌ بِالْعِبَادِ',
+      ur: 'اور میں اپنا کام خدا کے سپرد کرتا ہوں، بےشک خدا بندوں کو دیکھنے والا ہے',
       en: '"I entrust my affair to Allah. Indeed, Allah is Seeing of His servants."',
+      nl: '"En ik laat mijn zaak over aan Allah: voorwaar, Allah is Alziende over de dienaren."',
       ref: "Qur'an — Surah Ghafir 40:44" },
     { ar: 'فَأَيْنَمَا تُوَلُّوا فَثَمَّ وَجْهُ اللَّهِ',
+      ur: 'تو جدھر تم رخ کرو ادھر خدا کی ذات ہے',
       en: '"So wherever you turn, there is the Face of Allah."',
+      nl: '"Waarheen jullie je ook wenden, daar is het Aangezicht van Allah."',
       ref: "Qur'an — Surah Al-Baqarah 2:115" },
     { ar: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+      ur: 'پروردگار! ہم کو دنیا میں بھی نعمت عطا فرما اور آخرت میں بھی نعمت بخشیو اور دوزخ کے عذاب سے محفوظ رکھیو',
       en: '"Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire."',
+      nl: '"Onze Heer, geef ons in de wereld wat goed is en in het Hiernamaals wat goed is en bescherm ons tegen de bestraffing van de Hel."',
       ref: "Qur'an — Surah Al-Baqarah 2:201" },
     { ar: 'رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِن لَّدُنكَ رَحْمَةً',
+      ur: 'اے پروردگار! جب تو نے ہمیں ہدایت بخشی ہے تو ہمارے دلوں میں کجی نہ پیدا کر دیجیو اور ہمیں اپنے ہاں سے نعمت عطا فرما',
       en: '"Our Lord, let not our hearts deviate after You have guided us, and grant us mercy from Yourself."',
+      nl: '"Onze Heer, laat onze harten niet afwijken nadat U ons geleid heeft en schenk ons van Uw kant Barmhartigheid."',
       ref: "Qur'an — Surah Aal-e-Imran 3:8" },
     { ar: 'رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ',
+      ur: 'پروردگار! ہم نے اپنی جانوں پر ظلم کیا، اور اگر تو ہمیں نہیں بخشے گا اور ہم پر رحم نہیں کرے گا تو ہم تباہ ہو جائیں گے',
       en: '"Our Lord, we have wronged ourselves; if You do not forgive us and have mercy upon us, we will surely be among the losers."',
+      nl: '"Onze Heer, wij hebben onszelf onrecht aangedaan en wanneer U ons niet vergeeft en ons geen genade schenkt, dan zullen wij zeker tot de verliezers behoren."',
       ref: "Qur'an — Surah Al-A'raf 7:23" },
     { ar: 'رَبَّنَا آتِنَا مِن لَّدُنكَ رَحْمَةً وَهَيِّئْ لَنَا مِنْ أَمْرِنَا رَشَدًا',
+      ur: 'اے ہمارے پروردگار! ہم پر اپنے ہاں سے رحمت نازل فرما اور ہمارے کام درستی مہیا کر',
       en: '"Our Lord, grant us mercy from Yourself and prepare for us right guidance in our affair."',
+      nl: '"Onze Heer, schenk ons van Uw Zijde Barmhartigheid en bereid ons een rechte weg voor onze zaak."',
       ref: "Qur'an — Surah Al-Kahf 18:10" },
     { ar: 'لَّا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ',
+      ur: 'تیرے سوا کوئی معبود نہیں، تو پاک ہے، بےشک میں قصوروار ہوں',
       en: '"There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers."',
+      nl: '"Er is geen god dan U, Heilig bent U: voorwaar, ik behoorde tot de onrechtvaardigen."',
       ref: "Qur'an — Surah Al-Anbya 21:87" },
     { ar: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ',
+      ur: 'اے پروردگار! ہم کو ہماری بیویوں اور اولاد کی طرف سے آنکھ کی ٹھنڈک عطا فرما',
       en: '"Our Lord, grant us from among our spouses and offspring comfort to our eyes."',
+      nl: '"Onze Heer, schenk ons van onze echtgenotes en onze nakomelingen een verkoeling voor de ogen."',
       ref: "Qur'an — Surah Al-Furqan 25:74" },
     { ar: 'رَّبُّ الْمَشْرِقِ وَالْمَغْرِبِ لَا إِلَٰهَ إِلَّا هُوَ فَاتَّخِذْهُ وَكِيلًا',
+      ur: 'مشرق اور مغرب کا مالک، اس کے سوا کوئی معبود نہیں، تو اسی کو اپنا کارساز بناؤ',
       en: '"The Lord of the east and the west; there is no deity except Him, so take Him as Disposer of your affairs."',
+      nl: '"De Heer van de opgang en de ondergang, geen god is er dan Hij, neem Hem daarom als Beschermer."',
       ref: "Qur'an — Surah Al-Muzzammil 73:9" },
     { ar: 'اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ ۖ لَهُ الْأَسْمَاءُ الْحُسْنَىٰ',
+      ur: 'اس کے سوا کوئی معبود نہیں ہے، اس کے سب نام اچھے ہیں',
       en: '"Allah — there is no deity except Him. To Him belong the best names."',
+      nl: '"Allah, er is geen god dan Hij, de Schone Namen behoren Hem toe."',
       ref: "Qur'an — Surah Ta-Ha 20:8" },
     { ar: 'هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ ۖ عَالِمُ الْغَيْبِ وَالشَّهَادَةِ ۖ هُوَ الرَّحْمَٰنُ الرَّحِيمُ',
+      ur: 'وہی خدا ہے جس کے سوا کوئی معبود نہیں، پوشیدہ اور ظاہر کا جاننے والا، وہ بڑا مہربان نہایت رحم والا ہے',
       en: '"He is Allah, other than whom there is no deity, Knower of the unseen and the witnessed. He is the Most Gracious, the Most Merciful."',
+      nl: '"Hij is Allah, naast Wie er geen god is, de Kenner van het onwaarneembare en het waarneembare. Hij is de Erbarmer, de Meest Barmhartige."',
       ref: "Qur'an — Surah Al-Hashr 59:22" },
     { ar: 'وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً لِّلْعَالَمِينَ',
+      ur: 'اور ہم نے تم کو تمام جہان کے لئے رحمت بنا کر بھیجا ہے',
       en: '"And We have not sent you except as a mercy to the worlds."',
+      nl: '"En Wij hebben jou slechts gezonden als een barmhartigheid voor de werelden."',
       ref: "Qur'an — Surah Al-Anbya 21:107" },
     { ar: 'وَالذَّاكِرِينَ اللَّهَ كَثِيرًا وَالذَّاكِرَاتِ أَعَدَّ اللَّهُ لَهُم مَّغْفِرَةً وَأَجْرًا عَظِيمًا',
+      ur: 'خدا کو کثرت سے یاد کرنے والے مرد اور یاد کرنے والی عورتیں — ان کے لئے خدا نے بخشش اور اجر عظیم تیار کر رکھا ہے',
       en: '"The men and women who remember Allah often — Allah has prepared for them forgiveness and a great reward."',
+      nl: '"En de mannen en de vrouwen die Allah veelvuldig gedenken: Allah heeft voor hen vergeving bereid en een geweldige beloning."',
       ref: "Qur'an — Surah Al-Ahzab 33:35" },
     { ar: 'وَاذْكُرُوا اللَّهَ كَثِيرًا لَّعَلَّكُمْ تُفْلِحُونَ',
+      ur: 'اور خدا کو بہت بہت یاد کرتے رہو تاکہ نجات پاؤ',
       en: '"And remember Allah often that you may succeed."',
+      nl: '"En gedenkt Allah veelvuldig. Hopelijk zullen jullie welslagen."',
       ref: "Qur'an — Surah Al-Jumu'ah 62:10" },
     { ar: 'وَاذْكُر رَّبَّكَ فِي نَفْسِكَ تَضَرُّعًا وَخِيفَةً',
+      ur: 'اور اپنے پروردگار کو دل ہی دل میں عاجزی اور خوف سے یاد کرتے رہو',
       en: '"And remember your Lord within yourself in humility and in fear."',
+      nl: '"En gedenk jouw Heer in jezelf, met nederigheid en vrees."',
       ref: "Qur'an — Surah Al-A'raf 7:205" },
     { ar: 'وَاذْكُر رَّبَّكَ إِذَا نَسِيتَ',
+      ur: 'اور جب خدا کا نام لینا بھول جاؤ تو یاد آنے پر لے لو',
       en: '"And remember your Lord when you forget."',
+      nl: '"En herinner je jouw Heer indien jij vergeet."',
       ref: "Qur'an — Surah Al-Kahf 18:24" },
     { ar: 'وَاذْكُرِ اسْمَ رَبِّكَ بُكْرَةً وَأَصِيلًا',
+      ur: 'اور صبح وشام اپنے پروردگار کا نام لیتے رہو',
       en: '"And remember the name of your Lord morning and evening."',
+      nl: '"En gedenk de Naam van jouw Heer, in de ochtend en de avond."',
       ref: "Qur'an — Surah Al-Insan 76:25" },
     { ar: 'فَسَبِّحْ بِحَمْدِ رَبِّكَ وَكُن مِّنَ السَّاجِدِينَ',
+      ur: 'تو تم اپنے پروردگار کی تسبیح کہتے رہو اور سجدہ کرنے والوں میں داخل رہو',
       en: '"So exalt Allah with praise of your Lord and be of those who prostrate."',
+      nl: '"Heilig jouw Heer met een lofprijzing en behoor tot hen die zich neerknielen."',
       ref: "Qur'an — Surah Al-Hijr 15:98" },
     { ar: 'فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ ۚ إِنَّهُ كَانَ تَوَّابًا',
+      ur: 'تو اپنے پروردگار کی تعریف کے ساتھ تسبیح کرو اور اس سے مغفرت مانگو، بے شک وہ معاف کرنے والا ہے',
       en: '"Then exalt Him with praise of your Lord and ask His forgiveness. Indeed, He is ever Accepting of repentance."',
+      nl: '"Prijs dan de Glorie van jouw Heer en vraag Hem om vergeving. Voorwaar, Hij is Berouwaanvaardend."',
       ref: "Qur'an — Surah An-Nasr 110:3" },
     { ar: 'وَإِن تَعُدُّوا نِعْمَةَ اللَّهِ لَا تُحْصُوهَا ۗ إِنَّ اللَّهَ لَغَفُورٌ رَّحِيمٌ',
+      ur: 'اور اگر تم خدا کی نعمتوں کو شمار کرنا چاہو تو گن نہ سکو، بےشک خدا بخشنے والا مہربان ہے',
       en: '"And if you should count the favours of Allah, you could not enumerate them. Indeed, Allah is Forgiving and Merciful."',
+      nl: '"En als jullie de gunsten van Allah zouden willen optellen, kunnen jullie ze niet opsommen. Voorwaar, Allah is zeker Vergevensgezind, Meest Barmhartig."',
       ref: "Qur'an — Surah An-Nahl 16:18" },
     { ar: 'كُلُّ مَنْ عَلَيْهَا فَانٍ ۝ وَيَبْقَىٰ وَجْهُ رَبِّكَ ذُو الْجَلَالِ وَالْإِكْرَامِ',
+      ur: 'جو زمین پر ہے سب کو فنا ہونا ہے، اور تمہارے پروردگار ہی کی ذات جو صاحبِ جلال و عظمت ہے باقی رہے گی',
       en: '"Everyone upon the earth will perish, and there will remain the Face of your Lord, Owner of Majesty and Honour."',
+      nl: '"Alles wat op aarde is zal vergaan. En het Aangezicht van jouw Heer is blijvend, de Bezitter van Majesteit en Eer."',
       ref: "Qur'an — Surah Ar-Rahman 55:26-27" },
     { ar: 'الَّذِينَ يَذْكُرُونَ اللَّهَ قِيَامًا وَقُعُودًا وَعَلَىٰ جُنُوبِهِمْ',
+      ur: 'جو کھڑے اور بیٹھے اور لیٹے، ہر حال میں خدا کو یاد کرتے ہیں',
       en: '"Those who remember Allah while standing, sitting, and lying on their sides."',
+      nl: '"Degenen die Allah gedenken terwijl zij staan en zitten en op hun zij liggen."',
       ref: "Qur'an — Surah Aal-e-Imran 3:191" }
   ];
 
+  var DUA = {
+    ar: 'الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ',
+    ur: 'تمام تعریفیں اللہ کے لیے ہیں جس کے فضل و کرم سے نیک اعمال پایہ تکمیل کو پہنچتے ہیں۔',
+    en: '"All praise is due to Allah, by whose grace good deeds are completed."',
+    nl: '"Alle lof zij Allah, door Wiens gunst goede daden worden voltooid."'
+  };
+
   function applyDailyVerse() {
     var d = new Date();
-    // whole days since epoch, in local time -> same verse all day, new one each day
     var dayIndex = Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
     var v = VERSES[((dayIndex % VERSES.length) + VERSES.length) % VERSES.length];
-    document.getElementById('verseUrdu').textContent = v.ar;
-    document.getElementById('verseEn').textContent = v.en;
+    document.getElementById('verseUrdu').textContent = SET.script === 'ur' ? v.ur : v.ar;
+    document.getElementById('verseEn').textContent = SET.lang === 'nl' ? v.nl : v.en;
     document.getElementById('verseRef').textContent = v.ref;
   }
-  applyDailyVerse();
 
-  // ---- Preset picker ----
+  // ---------- Preset picker ----------
   var presetsWrap = document.getElementById('presets');
-  PRESETS.forEach(function (p) {
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'preset' + (p.id === preset.id ? ' sel' : '');
-    b.innerHTML = '<span class="p-ar">' + p.ar + '</span><span class="p-n">' + p.label + ' × ' + p.target + '</span>';
-    b.addEventListener('click', function () {
-      preset = p;
-      TARGET = p.target;
-      try { localStorage.setItem('zikr-preset', p.id); } catch (e) {}
-      count = loadCount();
-      var sel = presetsWrap.querySelector('.sel');
-      if (sel) sel.classList.remove('sel');
-      b.classList.add('sel');
+  function renderPresets() {
+    presetsWrap.innerHTML = '';
+    PRESETS.forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'preset' + (p.id === preset.id ? ' sel' : '');
+      b.innerHTML = '<span class="p-ar">' + (SET.script === 'ur' ? p.ur : p.ar) + '</span>' +
+                    '<span class="p-n">' + p.label + ' × ' + p.target + '</span>';
+      b.addEventListener('click', function () {
+        preset = p;
+        TARGET = p.target;
+        try { localStorage.setItem('zikr-preset', p.id); } catch (e) {}
+        count = loadCount();
+        var sel = presetsWrap.querySelector('.sel');
+        if (sel) sel.classList.remove('sel');
+        b.classList.add('sel');
+      });
+      presetsWrap.appendChild(b);
     });
-    presetsWrap.appendChild(b);
-  });
+  }
 
-  // ---- Completion star-burst ----
+  // ---------- Settings screen ----------
+  function buildSettingsRows() {
+    var t = T();
+    var rows = [
+      { key: 'lang',   label: t.language,  opts: [['en', 'English'], ['nl', 'Nederlands']] },
+      { key: 'script', label: t.script,    opts: [['ar', 'العربية'], ['ur', 'اردو']] },
+      { key: 'theme',  label: t.theme,     opts: [['blue', t.blue], ['black', t.black], ['green', t.green]] },
+      { key: 'vib',    label: t.vibration, opts: [[true, t.on], [false, t.off]] },
+      { key: 'mile',   label: t.milestone, opts: [[50, '50'], [100, '100']] },
+      { key: 'trans',  label: t.showTrans, opts: [[true, t.on], [false, t.off]] }
+    ];
+    var wrap = document.getElementById('setRows');
+    wrap.innerHTML = '';
+    rows.forEach(function (row) {
+      var div = document.createElement('div');
+      div.className = 'set-row';
+      var lbl = document.createElement('span');
+      lbl.className = 'set-label';
+      lbl.textContent = row.label;
+      var seg = document.createElement('span');
+      seg.className = 'seg';
+      row.opts.forEach(function (opt) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = opt[1];
+        if (SET[row.key] === opt[0]) b.className = 'sel';
+        b.addEventListener('click', function () {
+          SET[row.key] = opt[0];
+          saveSet();
+          applySettings();
+        });
+        seg.appendChild(b);
+      });
+      div.appendChild(lbl);
+      div.appendChild(seg);
+      wrap.appendChild(div);
+    });
+  }
+
+  function applySettings() {
+    var t = T();
+    document.body.setAttribute('data-theme', SET.theme);
+    document.body.setAttribute('data-script', SET.script);
+    document.getElementById('startBtn').textContent = t.start;
+    document.getElementById('againBtn').textContent = t.again;
+    document.getElementById('resetBtn').textContent = t.reset;
+    document.getElementById('tapHint').textContent = t.tap;
+    document.getElementById('setTitle').textContent = t.settings;
+    document.getElementById('backBtn').textContent = t.back;
+    document.getElementById('duaAr').textContent = SET.script === 'ur' ? DUA.ur : DUA.ar;
+    var duaTr = document.getElementById('duaTr');
+    duaTr.textContent = SET.lang === 'nl' ? DUA.nl : DUA.en;
+    duaTr.style.display = SET.trans ? '' : 'none';
+    document.getElementById('verseEn').style.display = SET.trans ? '' : 'none';
+    applyDailyVerse();
+    renderPresets();
+    buildSettingsRows();
+    render();
+    fitVerse();
+  }
+
+  document.getElementById('gearBtn').addEventListener('click', function () { show(settings); });
+  document.getElementById('backBtn').addEventListener('click', function () { show(splash); });
+
+  // ---------- Auto-fit a nowrap line to its container ----------
+  function fitLine(el) {
+    el.style.fontSize = '';
+    var fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth && fs > 9) {
+      fs -= 0.5;
+      el.style.fontSize = fs + 'px';
+    }
+  }
+  function fitVerse() { fitLine(document.querySelector('.verse-urdu')); }
+  window.addEventListener('resize', function () {
+    fitVerse();
+    if (!done.classList.contains('hidden')) fitLine(document.getElementById('duaTr'));
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitVerse);
+
+  // ---------- Completion star-burst ----------
   function starBurst() {
     var wrap = document.querySelector('.star-wrap');
     for (var i = 0; i < 14; i++) {
@@ -802,32 +1103,15 @@
     }
   }
 
-  // ---- Version indicator ----
+  // ---------- Version indicator ----------
   document.getElementById('ver').textContent = 'v' + APP_VERSION;
 
-  // ---- PWA service worker (no-op when opened as a plain file) ----
+  // ---------- PWA service worker (no-op when opened as a plain file) ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     navigator.serviceWorker.register('sw.js').catch(function () {});
   }
 
-  // Auto-fit a nowrap line to its container (element must be visible to measure)
-  function fitLine(el) {
-    el.style.fontSize = '';
-    var fs = parseFloat(getComputedStyle(el).fontSize);
-    while (el.scrollWidth > el.clientWidth && fs > 9) {
-      fs -= 0.5;
-      el.style.fontSize = fs + 'px';
-    }
-  }
-  function fitVerse() { fitLine(document.querySelector('.verse-urdu')); }
-  window.addEventListener('resize', function () {
-    fitVerse();
-    if (!done.classList.contains('hidden')) fitLine(document.querySelector('.done-msg-en'));
-  });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitVerse);
-  fitVerse();
-
-  render();
+  applySettings();
 })();
 </script>
 </body>
