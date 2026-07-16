@@ -360,7 +360,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.2.3';
+  var APP_VERSION = '1.2.4';
 
   // ---- Dhikr presets (each keeps its own progress) ----
   var PRESETS = [
@@ -451,7 +451,8 @@
     var last = null;
     try { last = localStorage.getItem('zikr-last-done'); } catch (e) {}
     if (!t && !last) { el.textContent = ''; return; }
-    var parts = [String(t).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' counts in a lifetime', c + ' goal' + (c === 1 ? '' : 's') + ' reached'];
+    function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    var parts = [fmt(t) + ' counts in a lifetime', fmt(c) + ' goal' + (c === 1 ? '' : 's') + ' reached'];
     if (last) {
       if (last === today()) {
         parts.push('last today');
