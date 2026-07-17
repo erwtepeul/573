@@ -286,13 +286,13 @@
   }
   .stat-line b { color: var(--cream); font-weight: 400; }
   .badges {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px 6px;
     width: 100%; max-width: 300px; direction: ltr;
   }
   .badge { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.3; }
   .badge.won { opacity: 1; }
   .badge-seal {
-    width: 42px; height: 42px; border-radius: 50%;
+    width: 40px; height: 40px; border-radius: 50%;
     border: 1px solid rgba(212,175,55,0.7);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 0.62rem;
@@ -521,6 +521,7 @@
     <div class="stat-lines" id="statLines"></div>
     <div class="stats-sub" id="achTitle" style="margin-top:18px;"></div>
     <div class="badges" id="badges"></div>
+    <div class="badges" id="badgesStreak" style="margin-top:12px;"></div>
     <button class="start-btn" id="statsBackBtn" style="margin-top:24px;">Back</button>
     <div class="ver" id="ver4"></div>
   </div>
@@ -563,7 +564,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.0';
+  var APP_VERSION = '1.7.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -587,8 +588,8 @@
       back: 'Back', on: 'On', off: 'Off',
       blue: 'Blue', black: 'Black', green: 'Green',
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
-      stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', bestDay: 'Best day',
-      avgDay: 'Daily average', achievements: 'Achievements', countsB: 'counts', streakB: 'day streak', goalsB: 'goals',
+      stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', daysB: 'days',
+      achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
       wd: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -612,8 +613,8 @@
       back: 'Terug', on: 'Aan', off: 'Uit',
       blue: 'Blauw', black: 'Zwart', green: 'Groen',
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
-      stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', bestDay: 'Beste dag',
-      avgDay: 'Daggemiddelde', achievements: 'Prestaties', countsB: 'tellingen', streakB: 'dagen reeks', goalsB: 'doelen',
+      stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', daysB: 'dagen',
+      achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
       wd: ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
@@ -750,20 +751,17 @@
   function renderSummary() {
     var t = T();
     var el = document.getElementById('summary');
-    var total = getN('zikr-total'), c = getN('zikr-completions');
     var last = null;
     try { last = localStorage.getItem('zikr-last-done'); } catch (e) {}
-    if (!total && !last) { el.textContent = ''; return; }
-    var parts = [fmt(total) + ' ' + t.counts, fmt(c) + ' ' + (c === 1 ? t.goal : t.goals)];
-    if (last) {
-      if (last === today()) parts.push(t.lastToday);
-      else if (last === yesterday()) parts.push(t.lastYesterday);
-      else {
-        var p = last.split('-');
-        parts.push(t.lastOn + ' ' + t.fmtDate(new Date(+p[0], +p[1] - 1, +p[2])));
-      }
+    if (!last) { el.textContent = ''; return; }
+    var part;
+    if (last === today()) part = t.lastToday;
+    else if (last === yesterday()) part = t.lastYesterday;
+    else {
+      var p = last.split('-');
+      part = t.lastOn + ' ' + t.fmtDate(new Date(+p[0], +p[1] - 1, +p[2]));
     }
-    el.textContent = parts.join(', ') + '.';
+    el.textContent = part.charAt(0).toUpperCase() + part.slice(1) + '.';
   }
 
   function render() {
@@ -1471,13 +1469,9 @@
     }
     drawChart(vals, days);
     var total = getN('zikr-total'), goals = getN('zikr-completions');
-    var best = Math.max.apply(null, vals);
-    var sum = 0;
-    for (var j = 0; j < vals.length; j++) sum += vals[j];
     var lines = [
       [t.totalL, fmt(total)],
-      [t.bestDay, fmt(best)],
-      [t.avgDay, fmt(Math.round(sum / 14))]
+      [t.goalsReached, fmt(goals)]
     ];
     var lw = document.getElementById('statLines');
     lw.innerHTML = '';
@@ -1487,22 +1481,34 @@
       div.innerHTML = '<span>' + ln[0] + '</span><b>' + ln[1] + '</b>';
       lw.appendChild(div);
     });
-    var ls = longestStreak();
-    var defs = [
-      [fmt(1000), t.countsB, total >= 1000],
-      [fmt(10000), t.countsB, total >= 10000],
-      [fmt(100000), t.countsB, total >= 100000],
-      ['7', t.streakB, ls >= 7],
-      ['40', t.streakB, ls >= 40],
-      ['100', t.goalsB, goals >= 100]
-    ];
+    function shortNum(v) {
+      if (v < 1000000) return (v / 1000) + 'k';
+      var m = v / 1000000;
+      return (m % 1 === 0 ? String(m) : String(m).replace('.', ',')) + 'M';
+    }
+    // counts: one seal per 100.000, rows of five, up to 5 million;
+    // rows appear as you approach them
+    var STEP = 100000, MAXSEALS = 50;
+    var achieved = Math.min(MAXSEALS, Math.floor(total / STEP));
+    var shown = Math.min(MAXSEALS, Math.max(5, Math.ceil((achieved + 1) / 5) * 5));
     var bw = document.getElementById('badges');
     bw.innerHTML = '';
-    defs.forEach(function (def) {
+    for (var bi = 1; bi <= shown; bi++) {
+      var v = bi * STEP;
       var b = document.createElement('div');
-      b.className = 'badge' + (def[2] ? ' won' : '');
-      b.innerHTML = '<span class="badge-seal">' + def[0] + '</span><span class="badge-label">' + def[1] + '</span>';
+      b.className = 'badge' + (total >= v ? ' won' : '');
+      b.innerHTML = '<span class="badge-seal">' + shortNum(v) + '</span>';
       bw.appendChild(b);
+    }
+    // streaks: one row adding up to a year
+    var ls = longestStreak();
+    var sw = document.getElementById('badgesStreak');
+    sw.innerHTML = '';
+    [7, 30, 90, 180, 365].forEach(function (dv) {
+      var b = document.createElement('div');
+      b.className = 'badge' + (ls >= dv ? ' won' : '');
+      b.innerHTML = '<span class="badge-seal">' + dv + '</span><span class="badge-label">' + t.daysB + '</span>';
+      sw.appendChild(b);
     });
   }
 
