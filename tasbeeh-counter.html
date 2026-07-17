@@ -275,12 +275,17 @@
     border: 1px solid transparent;
   }
   .cal-day.done {
-    background: rgba(212,175,55,0.32);
+    background: rgba(212,175,55,0.20);
     border: none; border-radius: 0; box-shadow: none;
-    color: var(--cream);
+    color: rgba(250,246,236,0.75);
     clip-path: polygon(50.0% 0.0%, 64.6% 14.6%, 85.4% 14.6%, 85.4% 35.4%, 100.0% 50.0%, 85.4% 64.6%, 85.4% 85.4%, 64.6% 85.4%, 50.0% 100.0%, 35.4% 85.4%, 14.6% 85.4%, 14.6% 64.6%, 0.0% 50.0%, 14.6% 35.4%, 14.6% 14.6%, 35.4% 14.6%);
   }
   .cal-day.today { border-color: rgba(212,175,55,0.5); border-style: dashed; }
+  .cal-day.done.today {
+    background: rgba(212,175,55,0.5);
+    color: var(--cream);
+    filter: drop-shadow(0 0 1.5px #ffe066) drop-shadow(0 0 3px rgba(255,224,102,0.7));
+  }
   .stats-btn {
     position: absolute; z-index: 6;
     top: max(26px, env(safe-area-inset-top)); left: 58px;
@@ -605,7 +610,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.9.1';
+  var APP_VERSION = '1.9.2';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
