@@ -1,9 +1,12 @@
-var CACHE = 'zikr-v2';
+// Cache name derives from the registration URL (?v=APP_VERSION),
+// so every app version automatically gets a fresh cache.
+var CACHE = 'zikr-' + (self.location.search ? self.location.search.slice(1) : 'v0');
 var ASSETS = [
   './tasbeeh-counter.html',
   './manifest.webmanifest',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './icon-512-maskable.png'
 ];
 
 self.addEventListener('install', function (e) {
@@ -24,7 +27,6 @@ self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   var isPage = e.request.mode === 'navigate' || e.request.destination === 'document';
   if (isPage) {
-    // network-first for the app itself, so updates arrive on next launch; cache when offline
     e.respondWith(
       fetch(e.request).then(function (res) {
         var clone = res.clone();
@@ -32,4 +34,22 @@ self.addEventListener('fetch', function (e) {
         return res;
       }).catch(function () {
         return caches.match(e.request).then(function (hit) {
-          return hit || ca
+          return hit || caches.match('./tasbeeh-counter.html');
+        });
+      })
+    );
+  } else {
+    e.respondWith(
+      caches.match(e.request).then(function (hit) {
+        if (hit) return hit;
+        return fetch(e.request).then(function (res) {
+          if (res && res.ok) {
+            var clone = res.clone();
+            caches.open(CACHE).then(function (c) { c.put(e.request, clone); });
+          }
+          return res;
+        });
+      })
+    );
+  }
+});
