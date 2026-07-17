@@ -269,19 +269,22 @@
   .qibla-label.s { transform: translate(-50%, 77px); }
   .qibla-label.w { transform: translate(-96px, -50%); }
   .qibla-needle { position: absolute; inset: 0; transition: transform 0.2s ease-out; }
-  .qibla-needle-line {
+  .qibla-needle-tip {
     position: absolute; left: 50%; top: 50%;
-    width: 3px; height: 92px;
-    background: linear-gradient(to top, transparent, var(--gold) 30%, var(--gold-light));
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 92px solid var(--gold-light);
     transform: translate(-50%, -100%); transform-origin: 50% 100%;
-    border-radius: 2px;
-    filter: drop-shadow(0 0 6px rgba(212,175,55,0.6));
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.65));
   }
-  .qibla-kaaba {
+  .qibla-needle-tail {
     position: absolute; left: 50%; top: 50%;
-    font-size: 1rem;
-    transform: translate(-50%, calc(-100% - 78px));
-    transform-origin: 50% calc(100% + 78px);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 24px solid rgba(212,175,55,0.35);
+    transform: translate(-50%, 0);
   }
   .qibla-dot {
     position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 50%;
@@ -641,15 +644,15 @@
     <div class="set-title" id="compassTitle">Qibla</div>
     <div class="stats-sub" id="compassSub"></div>
     <div class="qibla-dial-wrap">
-      <div class="qibla-dial" id="qiblaDial"></div>
-      <div id="qiblaTicks"></div>
-      <div class="qibla-label n">N</div>
-      <div class="qibla-label e">E</div>
-      <div class="qibla-label s">S</div>
-      <div class="qibla-label w">W</div>
+      <div class="qibla-dial" id="qiblaDial">
+        <div class="qibla-label n">N</div>
+        <div class="qibla-label e">E</div>
+        <div class="qibla-label s">S</div>
+        <div class="qibla-label w">W</div>
+      </div>
       <div class="qibla-needle" id="qiblaNeedle">
-        <div class="qibla-needle-line"></div>
-        <div class="qibla-kaaba">🕋</div>
+        <div class="qibla-needle-tip"></div>
+        <div class="qibla-needle-tail"></div>
       </div>
       <div class="qibla-dot"></div>
     </div>
@@ -701,7 +704,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.4';
+  var APP_VERSION = '2.0.5';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
