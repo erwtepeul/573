@@ -564,7 +564,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.1';
+  var APP_VERSION = '1.7.2';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -582,7 +582,7 @@
       confirmReset: 'Reset the counter to zero?',
       streak: 'Streak', day: 'day', days: 'days',
       counts: 'counts in a lifetime', goal: 'goal reached', goals: 'goals reached',
-      lastToday: 'last today', lastYesterday: 'last yesterday', lastOn: 'last on',
+      lastToday: 'last time goal reached was today', lastYesterday: 'last time goal reached was yesterday', lastOn: 'last time goal reached was on',
       settings: 'Settings', language: 'Language', script: 'Script', theme: 'Theme', numerals: 'Numerals',
       vibration: 'Vibration', milestone: 'Milestone every', showTrans: 'Show translation',
       back: 'Back', on: 'On', off: 'Off',
@@ -607,7 +607,7 @@
       confirmReset: 'Teller op nul zetten?',
       streak: 'Reeks', day: 'dag', days: 'dagen',
       counts: 'tellingen in totaal', goal: 'doel bereikt', goals: 'doelen bereikt',
-      lastToday: 'laatst vandaag', lastYesterday: 'laatst gisteren', lastOn: 'laatst op',
+      lastToday: 'laatste keer doel bereikt was vandaag', lastYesterday: 'laatste keer doel bereikt was gisteren', lastOn: 'laatste keer doel bereikt was op',
       settings: 'Instellingen', language: 'Taal', script: 'Schrift', theme: 'Thema', numerals: 'Cijfers',
       vibration: 'Trillen', milestone: 'Mijlpaal elke', showTrans: 'Vertaling tonen',
       back: 'Terug', on: 'Aan', off: 'Uit',
@@ -1486,18 +1486,19 @@
       var m = v / 1000000;
       return (m % 1 === 0 ? String(m) : String(m).replace('.', ',')) + 'M';
     }
-    // counts: one seal per 100.000, rows of five, up to 5 million;
+    // counts ladder: 10k-50k, then 100k steps up to 2 million (rows of five);
     // rows appear as you approach them
-    var STEP = 100000, MAXSEALS = 50;
-    var achieved = Math.min(MAXSEALS, Math.floor(total / STEP));
-    var shown = Math.min(MAXSEALS, Math.max(5, Math.ceil((achieved + 1) / 5) * 5));
+    var MILS = [10000, 20000, 30000, 40000, 50000];
+    for (var mv = 100000; mv <= 2000000; mv += 100000) MILS.push(mv);
+    var achieved = 0;
+    while (achieved < MILS.length && total >= MILS[achieved]) achieved++;
+    var shown = Math.min(MILS.length, Math.max(5, Math.ceil((achieved + 1) / 5) * 5));
     var bw = document.getElementById('badges');
     bw.innerHTML = '';
-    for (var bi = 1; bi <= shown; bi++) {
-      var v = bi * STEP;
+    for (var bi = 0; bi < shown; bi++) {
       var b = document.createElement('div');
-      b.className = 'badge' + (total >= v ? ' won' : '');
-      b.innerHTML = '<span class="badge-seal">' + shortNum(v) + '</span>';
+      b.className = 'badge' + (total >= MILS[bi] ? ' won' : '');
+      b.innerHTML = '<span class="badge-seal">' + shortNum(MILS[bi]) + '</span>';
       bw.appendChild(b);
     }
     // streaks: one row adding up to a year
