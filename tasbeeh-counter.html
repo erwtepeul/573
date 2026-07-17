@@ -762,7 +762,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.8';
+  var APP_VERSION = '2.0.9';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -1968,11 +1968,13 @@
   }
   function updateNeedle() {
     if (qiblaBearing === null) return;
+    var dial = document.getElementById('qiblaDial');
     var needle = document.getElementById('qiblaNeedle');
     var heading = deviceHeading !== null ? deviceHeading : 0;
-    // the dial background stays fixed (N always faces north / top);
-    // only the needle rotates to show the Qibla bearing relative to heading
+    // the needle rotates independently to show the Qibla bearing relative to heading
     needle.style.transform = 'rotate(' + ((qiblaBearing - heading + 360) % 360) + 'deg)';
+    // the dial rotates the opposite way so N genuinely tracks true north as you turn
+    dial.style.transform = hasCompassSensor ? 'rotate(' + (-heading) + 'deg)' : 'rotate(0deg)';
   }
   function onDeviceOrientation(e) {
     var heading = null;
