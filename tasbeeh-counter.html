@@ -593,7 +593,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.8.3';
+  var APP_VERSION = '1.8.4';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -698,12 +698,25 @@
     }
   } catch (e) {}
 
-  // seed history from the single last-done date (one-time migration)
+  // reconcile history with the streak counter: the streak predates day-by-day
+  // history, so backfill the consecutive days the current streak represents
   try {
     var seedLd = localStorage.getItem('zikr-last-done');
     if (seedLd) {
       var seedH = JSON.parse(localStorage.getItem('zikr-history') || '[]');
-      if (seedH.indexOf(seedLd) === -1) { seedH.push(seedLd); localStorage.setItem('zikr-history', JSON.stringify(seedH)); }
+      var seedS = Math.max(1, parseInt(localStorage.getItem('zikr-streak') || '1', 10) || 1);
+      var pdt = seedLd.split('-');
+      var sd = new Date(+pdt[0], +pdt[1] - 1, +pdt[2]);
+      var changed = false;
+      for (var si = 0; si < seedS; si++) {
+        var sk = localDate(sd);
+        if (seedH.indexOf(sk) === -1) { seedH.push(sk); changed = true; }
+        sd.setDate(sd.getDate() - 1);
+      }
+      if (changed) {
+        seedH.sort();
+        localStorage.setItem('zikr-history', JSON.stringify(seedH));
+      }
     }
   } catch (e) {}
 
