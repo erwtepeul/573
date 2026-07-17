@@ -94,7 +94,7 @@
   .hidden { display: none !important; }
 
   /* ---------- Splash ---------- */
-  #splash, #settings, #history { animation: fadeIn 1.2s ease; }
+  #splash, #settings, #history, #stats { animation: fadeIn 1.2s ease; }
   /* lift the text/icon block without moving the preset picker and start button */
   .crescent, .bismillah, .verse-urdu, .verse-en, .verse-ref { transform: translateY(-6vh); }
   .crescent { font-size: 3rem; color: var(--gold); margin-bottom: 8px; font-family: serif; }
@@ -263,6 +263,50 @@
     clip-path: polygon(50.0% 0.0%, 64.6% 14.6%, 85.4% 14.6%, 85.4% 35.4%, 100.0% 50.0%, 85.4% 64.6%, 85.4% 85.4%, 64.6% 85.4%, 50.0% 100.0%, 35.4% 85.4%, 14.6% 85.4%, 14.6% 64.6%, 0.0% 50.0%, 14.6% 35.4%, 14.6% 14.6%, 35.4% 14.6%);
   }
   .cal-day.today { border-color: rgba(212,175,55,0.5); border-style: dashed; }
+  .stats-btn {
+    position: absolute; z-index: 6;
+    top: max(26px, env(safe-area-inset-top)); left: 58px;
+    width: 19px; height: 19px;
+    border: none; cursor: pointer; opacity: 0.8;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='1.7' stroke-linecap='round'%3E%3Cpath d='M3 21h18M6 21V11M12 21V4M18 21V14'/%3E%3C/svg%3E") no-repeat center / contain;
+    filter: drop-shadow(0 0 3px rgba(212,175,55,0.3));
+  }
+  .stats-sub {
+    direction: ltr; font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.7rem; color: var(--gold-light); opacity: 0.75;
+    letter-spacing: 0.4px; margin-bottom: 8px;
+  }
+  #statsChart { width: 300px; height: 140px; }
+  .stat-lines { width: 100%; max-width: 300px; margin-top: 12px; }
+  .stat-line {
+    display: flex; justify-content: space-between; direction: ltr;
+    font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.72rem; color: var(--gold-light);
+    padding: 4px 2px; border-bottom: 1px solid rgba(212,175,55,0.12);
+  }
+  .stat-line b { color: var(--cream); font-weight: 400; }
+  .badges {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    width: 100%; max-width: 300px; direction: ltr;
+  }
+  .badge { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.3; }
+  .badge.won { opacity: 1; }
+  .badge-seal {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.7);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 0.62rem;
+    color: var(--gold-light);
+    background: radial-gradient(circle at 35% 30%, rgba(212,175,55,0.18), rgba(0,0,0,0.15));
+  }
+  .badge.won .badge-seal {
+    border-color: rgba(255,224,102,0.9);
+    box-shadow: 0 0 10px rgba(255,224,102,0.35);
+  }
+  .badge-label {
+    font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.52rem; color: var(--gold-light); opacity: 0.8;
+  }
   .cal-streak {
     margin-top: 16px; direction: ltr;
     font-family: 'Poppins', sans-serif; font-weight: 300;
@@ -434,6 +478,7 @@
   <div id="splash" class="screen">
     <button class="gear" id="gearBtn" type="button" aria-label="settings"></button>
     <button class="cal-btn" id="histBtn" type="button" aria-label="history"></button>
+    <button class="stats-btn" id="statsBtn" type="button" aria-label="statistics"></button>
     <div class="crescent">☪</div>
     <div class="bismillah">﷽</div>
     <div class="verse-urdu" id="verseUrdu"></div>
@@ -466,6 +511,18 @@
     <div class="cal-streak" id="calStreak"></div>
     <button class="start-btn" id="histBackBtn" style="margin-top:36px;">Back</button>
     <div class="ver" id="ver3"></div>
+  </div>
+
+  <!-- Statistics -->
+  <div id="stats" class="screen hidden">
+    <div class="set-title" id="statsTitle">Statistics</div>
+    <div class="stats-sub" id="statsSub"></div>
+    <canvas id="statsChart" width="600" height="280"></canvas>
+    <div class="stat-lines" id="statLines"></div>
+    <div class="stats-sub" id="achTitle" style="margin-top:18px;"></div>
+    <div class="badges" id="badges"></div>
+    <button class="start-btn" id="statsBackBtn" style="margin-top:24px;">Back</button>
+    <div class="ver" id="ver4"></div>
   </div>
 
   <!-- Counter -->
@@ -506,7 +563,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.6.3';
+  var APP_VERSION = '1.7.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -530,6 +587,8 @@
       back: 'Back', on: 'On', off: 'Off',
       blue: 'Blue', black: 'Black', green: 'Green',
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
+      stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', bestDay: 'Best day',
+      avgDay: 'Daily average', achievements: 'Achievements', countsB: 'counts', streakB: 'day streak', goalsB: 'goals',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
       wd: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -553,6 +612,8 @@
       back: 'Terug', on: 'Aan', off: 'Uit',
       blue: 'Blauw', black: 'Zwart', green: 'Groen',
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
+      stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', bestDay: 'Beste dag',
+      avgDay: 'Daggemiddelde', achievements: 'Prestaties', countsB: 'tellingen', streakB: 'dagen reeks', goalsB: 'doelen',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
       wd: ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
@@ -618,12 +679,23 @@
   // ---------- Lifetime stats ----------
   function getN(key) { try { return parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) { return 0; } }
   function bump(key, d) { try { localStorage.setItem(key, String(Math.max(0, getN(key) + d))); } catch (e) {} }
+  function bumpDaily(d) {
+    try {
+      var o = JSON.parse(localStorage.getItem('zikr-daily') || '{}');
+      var k = today();
+      o[k] = Math.max(0, (o[k] || 0) + d);
+      var keys = Object.keys(o).sort();
+      while (keys.length > 60) { delete o[keys.shift()]; }
+      localStorage.setItem('zikr-daily', JSON.stringify(o));
+    } catch (e) {}
+  }
 
   var splash = document.getElementById('splash');
   var counter = document.getElementById('counter');
   var done = document.getElementById('done');
   var settings = document.getElementById('settings');
   var histScreen = document.getElementById('history');
+  var statsScreen = document.getElementById('stats');
   var countNum = document.getElementById('countNum');
   var ringFg = document.getElementById('ringFg');
   ringFg.style.strokeDasharray = CIRC;
@@ -716,6 +788,7 @@
     done.classList.add('hidden');
     settings.classList.add('hidden');
     histScreen.classList.add('hidden');
+    statsScreen.classList.add('hidden');
     el.classList.remove('hidden');
     if (el === counter) requestWake(); else releaseWake();
   }
@@ -765,6 +838,7 @@
     count++;
     save();
     bump('zikr-total', 1);
+    bumpDaily(1);
     render();
     countNum.classList.remove('tick');
     void countNum.offsetWidth;
@@ -800,6 +874,7 @@
     count--;
     save();
     bump('zikr-total', -1);
+    bumpDaily(-1);
     render();
     vibrate(10);
   });
@@ -1378,10 +1453,106 @@
   document.getElementById('calPrev').addEventListener('click', function () { calDate.setMonth(calDate.getMonth() - 1); renderCalendar(); });
   document.getElementById('calNext').addEventListener('click', function () { calDate.setMonth(calDate.getMonth() + 1); renderCalendar(); });
 
+  // ---------- Statistics page ----------
+  function renderStatsPage() {
+    var t = T();
+    document.getElementById('statsTitle').textContent = t.stats;
+    document.getElementById('statsSub').textContent = t.last14;
+    document.getElementById('achTitle').textContent = t.achievements;
+    document.getElementById('statsBackBtn').textContent = t.back;
+    var daily = {};
+    try { daily = JSON.parse(localStorage.getItem('zikr-daily') || '{}'); } catch (e) {}
+    var days = [], vals = [];
+    for (var i = 13; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.getDate());
+      vals.push(daily[localDate(d)] || 0);
+    }
+    drawChart(vals, days);
+    var total = getN('zikr-total'), goals = getN('zikr-completions');
+    var best = Math.max.apply(null, vals);
+    var sum = 0;
+    for (var j = 0; j < vals.length; j++) sum += vals[j];
+    var lines = [
+      [t.totalL, fmt(total)],
+      [t.bestDay, fmt(best)],
+      [t.avgDay, fmt(Math.round(sum / 14))]
+    ];
+    var lw = document.getElementById('statLines');
+    lw.innerHTML = '';
+    lines.forEach(function (ln) {
+      var div = document.createElement('div');
+      div.className = 'stat-line';
+      div.innerHTML = '<span>' + ln[0] + '</span><b>' + ln[1] + '</b>';
+      lw.appendChild(div);
+    });
+    var ls = longestStreak();
+    var defs = [
+      [fmt(1000), t.countsB, total >= 1000],
+      [fmt(10000), t.countsB, total >= 10000],
+      [fmt(100000), t.countsB, total >= 100000],
+      ['7', t.streakB, ls >= 7],
+      ['40', t.streakB, ls >= 40],
+      ['100', t.goalsB, goals >= 100]
+    ];
+    var bw = document.getElementById('badges');
+    bw.innerHTML = '';
+    defs.forEach(function (def) {
+      var b = document.createElement('div');
+      b.className = 'badge' + (def[2] ? ' won' : '');
+      b.innerHTML = '<span class="badge-seal">' + def[0] + '</span><span class="badge-label">' + def[1] + '</span>';
+      bw.appendChild(b);
+    });
+  }
+
+  function drawChart(vals, days) {
+    var cv = document.getElementById('statsChart');
+    var ctx = cv.getContext && cv.getContext('2d');
+    if (!ctx) return;
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+    var padB = 34, padT = 28, padX = 8;
+    var max = Math.max.apply(null, vals.concat([1]));
+    var n = vals.length;
+    var slot = (W - padX * 2) / n;
+    var barW = slot * 0.55;
+    ctx.strokeStyle = 'rgba(212,175,55,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(padX, H - padB + 0.5);
+    ctx.lineTo(W - padX, H - padB + 0.5);
+    ctx.stroke();
+    var labelled = false;
+    for (var i = 0; i < n; i++) {
+      var h = Math.round((H - padB - padT) * (vals[i] / max));
+      var x = padX + slot * i + (slot - barW) / 2;
+      if (h > 0) {
+        ctx.fillStyle = 'rgba(224,190,80,0.85)';
+        ctx.fillRect(x, H - padB - h, barW, h);
+      }
+      ctx.fillStyle = 'rgba(240,217,140,0.55)';
+      ctx.font = '300 15px Poppins, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(days[i], x + barW / 2, H - padB + 22);
+      if (!labelled && vals[i] === max && vals[i] > 0) {
+        labelled = true;
+        ctx.fillStyle = 'rgba(255,224,102,0.9)';
+        ctx.fillText(fmt(vals[i]), x + barW / 2, H - padB - h - 8);
+      }
+    }
+  }
+
+  document.getElementById('statsBtn').addEventListener('click', function () {
+    renderStatsPage();
+    show(statsScreen);
+  });
+  document.getElementById('statsBackBtn').addEventListener('click', function () { show(splash); });
+
   // ---------- Version indicator ----------
   document.getElementById('ver').textContent = 'v' + APP_VERSION;
   document.getElementById('ver2').textContent = 'v' + APP_VERSION;
   document.getElementById('ver3').textContent = 'v' + APP_VERSION;
+  document.getElementById('ver4').textContent = 'v' + APP_VERSION;
 
   // ---------- PWA service worker (no-op when opened as a plain file) ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
