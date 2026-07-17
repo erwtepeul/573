@@ -132,9 +132,6 @@
     font-size: 0.7rem; color: var(--gold); opacity: 0.8;
     margin-bottom: 30px;
   }
-  .prayer-rule {
-    margin: 10px auto 0;
-  }
   .prayer-line {
     background: none; border: none; cursor: pointer;
     direction: ltr;
@@ -145,7 +142,7 @@
   }
   .presets {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px; margin: 7vh 0 28px; width: 100%; max-width: 320px;
+    gap: 10px; margin: 2.5vh 0 28px; width: 100%; max-width: 320px;
   }
   .preset {
     font-family: 'Amiri', serif;
@@ -537,7 +534,6 @@
     <div class="verse-urdu" id="verseUrdu"></div>
     <div class="verse-en" id="verseEn"></div>
     <div class="verse-ref" id="verseRef"></div>
-    <div class="rule prayer-rule"></div>
     <button class="prayer-line" id="prayerLine" type="button"></button>
     <div class="presets" id="presets"></div>
     <button class="start-btn" id="startBtn">Start</button>
@@ -622,7 +618,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.2';
+  var APP_VERSION = '2.0.3';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
