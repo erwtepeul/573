@@ -43,6 +43,7 @@
   /* Color themes: background only; frame, buttons and gold stay the same */
   body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; --btn1: #1c1c1c; --btn2: #0c0c0c; }
   body[data-theme="green"] { --bg1: #143526; --bg2: #0d2618; --bg3: #07170e; --btn1: #122b1d; --btn2: #091a10; }
+  body[data-theme="red"] { --bg1: #4a1a20; --bg2: #331216; --bg3: #1c0a0d; --btn1: #2b1116; --btn2: #150709; }
   /* Urdu script mode: Nastaliq typeface for Urdu text */
   body[data-script="ur"] .verse-urdu { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; font-size: 1.3rem; line-height: 2.5; }
   body[data-script="ur"] .done-msg,
@@ -581,7 +582,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.8.0';
+  var APP_VERSION = '1.8.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -603,7 +604,7 @@
       settings: 'Settings', language: 'Language', script: 'Script', theme: 'Theme', numerals: 'Numerals',
       vibration: 'Vibration', milestone: 'Milestone every', showTrans: 'Show translation',
       back: 'Back', on: 'On', off: 'Off',
-      blue: 'Blue', black: 'Black', green: 'Green',
+      blue: 'Blue', black: 'Black', green: 'Green', red: 'Burgundy',
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
       stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
       achievements: 'Achievements',
@@ -628,7 +629,7 @@
       settings: 'Instellingen', language: 'Taal', script: 'Schrift', theme: 'Thema', numerals: 'Cijfers',
       vibration: 'Trillen', milestone: 'Mijlpaal elke', showTrans: 'Vertaling tonen',
       back: 'Terug', on: 'Aan', off: 'Uit',
-      blue: 'Blauw', black: 'Zwart', green: 'Groen',
+      blue: 'Blauw', black: 'Zwart', green: 'Groen', red: 'Bordeauxrood',
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
       stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
       achievements: 'Prestaties',
@@ -1265,7 +1266,7 @@
       { key: 'lang',   label: t.language,  opts: [['en', 'English'], ['nl', 'Nederlands']] },
       { key: 'script', label: t.script,    opts: [['ar', 'العربية'], ['ur', 'اردو']] },
       { key: 'numerals', label: t.numerals, opts: [['latin', '123'], ['arabic', '١٢٣']] },
-      { key: 'theme',  label: t.theme,     opts: [['blue', t.blue], ['black', t.black], ['green', t.green]] },
+      { key: 'theme',  label: t.theme,     opts: [['blue', t.blue], ['black', t.black], ['green', t.green], ['red', t.red]] },
       { key: 'vib',    label: t.vibration, opts: [[true, t.on], [false, t.off]] },
       { key: 'mile',   label: t.milestone, opts: [[0, t.off], [10, '10'], [50, '50'], [100, '100']] },
       { key: 'trans',  label: t.showTrans, opts: [[true, t.on], [false, t.off]] },
@@ -1317,7 +1318,7 @@
   function applySettings() {
     var t = T();
     document.body.setAttribute('data-theme', SET.theme);
-    var tc = { blue: '#0e0e1c', black: '#0a0a0a', green: '#07170e' };
+    var tc = { blue: '#0e0e1c', black: '#0a0a0a', green: '#07170e', red: '#1c0a0d' };
     document.querySelector('meta[name="theme-color"]').setAttribute('content', tc[SET.theme] || '#0e0e1c');
     document.body.setAttribute('data-script', SET.script);
     document.getElementById('startBtn').textContent = t.start;
