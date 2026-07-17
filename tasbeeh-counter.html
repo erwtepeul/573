@@ -322,6 +322,15 @@
   }
   .preset:nth-child(5) { grid-column: 1 / -1; }
 
+  .back-arrow {
+    position: absolute; z-index: 6;
+    top: max(26px, env(safe-area-inset-top)); left: 24px;
+    width: 21px; height: 21px;
+    border: none; cursor: pointer; opacity: 0.8;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M12 19l-7-7 7-7'/%3E%3C/svg%3E") no-repeat center / contain;
+    filter: drop-shadow(0 0 3px rgba(212,175,55,0.3));
+  }
+
   /* ---------- Counter ---------- */
   #counter { padding-top: 14vh; }
   .frame-top {
@@ -535,6 +544,7 @@
 
   <!-- Counter -->
   <div id="counter" class="screen hidden">
+    <button class="back-arrow" id="counterBackBtn" type="button" aria-label="back"></button>
     <div class="frame-top" id="dhikrName">ذِكْر</div>
     <div class="count-wrap">
       <svg class="ring" viewBox="0 0 240 240">
@@ -571,7 +581,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.9';
+  var APP_VERSION = '1.8.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -894,6 +904,7 @@
   document.getElementById('resetBtn').addEventListener('click', function () {
     if (confirm(T().confirmReset)) reset();
   });
+  document.getElementById('counterBackBtn').addEventListener('click', function () { show(splash); });
   document.getElementById('againBtn').addEventListener('click', function () {
     count = 0;
     save();
@@ -1377,7 +1388,7 @@
   // ---------- Tap anywhere on the counter screen ----------
   counter.addEventListener('click', function (e) {
     if (!SET.fullTap) return;
-    if (e.target.closest && (e.target.closest('#countBtn') || e.target.closest('.btn-row'))) return;
+    if (e.target.closest && (e.target.closest('#countBtn') || e.target.closest('.btn-row') || e.target.closest('#counterBackBtn'))) return;
     document.getElementById('countBtn').click();
   });
 
