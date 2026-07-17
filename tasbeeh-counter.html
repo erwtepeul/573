@@ -571,7 +571,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.7';
+  var APP_VERSION = '1.7.8';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -848,7 +848,7 @@
     countNum.classList.remove('tick');
     void countNum.offsetWidth;
     countNum.classList.add('tick');
-    if (count < TARGET && count % SET.mile === 0) {
+    if (count < TARGET && SET.mile > 0 && count % SET.mile === 0) {
       vibrate([150, 80, 150]);
       milestonePulse();
       khatamBloom();
@@ -1248,7 +1248,7 @@
       { key: 'numerals', label: t.numerals, opts: [['latin', '123'], ['arabic', '١٢٣']] },
       { key: 'theme',  label: t.theme,     opts: [['blue', t.blue], ['black', t.black], ['green', t.green]] },
       { key: 'vib',    label: t.vibration, opts: [[true, t.on], [false, t.off]] },
-      { key: 'mile',   label: t.milestone, opts: [[10, '10'], [50, '50'], [100, '100']] },
+      { key: 'mile',   label: t.milestone, opts: [[0, t.off], [10, '10'], [50, '50'], [100, '100']] },
       { key: 'trans',  label: t.showTrans, opts: [[true, t.on], [false, t.off]] },
       { key: 'fullTap', label: t.fullTap,  opts: [[true, t.on], [false, t.off]] }
     ];
