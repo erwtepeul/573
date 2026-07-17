@@ -315,6 +315,17 @@
     font-family: 'Poppins', sans-serif; font-weight: 300;
     font-size: 0.52rem; color: var(--gold-light); opacity: 0.8;
   }
+  /* day-streak seals in silver (moonlight) to set them apart from the gold count seals */
+  #badgesStreak .badge-seal {
+    border-color: rgba(178, 198, 214, 0.7);
+    color: #cfdbe6;
+    background: radial-gradient(circle at 35% 30%, rgba(160, 185, 205, 0.16), rgba(0, 0, 0, 0.15));
+  }
+  #badgesStreak .badge.won .badge-seal {
+    border-color: rgba(214, 232, 246, 0.95);
+    box-shadow: 0 0 10px rgba(190, 215, 235, 0.4);
+  }
+  #badgesStreak .badge-label { color: #cfdbe6; }
   .cal-streak {
     margin-top: 16px; direction: ltr;
     font-family: 'Poppins', sans-serif; font-weight: 300;
@@ -582,7 +593,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.8.1';
+  var APP_VERSION = '1.8.2';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
