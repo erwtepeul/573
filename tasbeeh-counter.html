@@ -210,13 +210,11 @@
     position: absolute;
     bottom: max(70px, calc(env(safe-area-inset-bottom) + 64px));
     left: 0; right: 0; text-align: center;
-    background: none; border: none; cursor: pointer;
+    background: none; border: none; pointer-events: none;
     direction: ltr;
     font-family: 'Poppins', sans-serif; font-weight: 300;
     font-size: 0.62rem; letter-spacing: 0.4px;
     color: #ffe066; opacity: 0.9;
-    text-decoration: underline; text-underline-offset: 3px;
-    text-decoration-color: rgba(255,224,102,0.4);
   }
   .copyright {
     position: absolute;
@@ -607,7 +605,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.9.0';
+  var APP_VERSION = '1.9.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -633,7 +631,7 @@
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
       stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
       backup: 'Backup', save: 'Save', restore: 'Restore',
-      nudge: 'Tap to back up your progress', invalidFile: 'Not a valid backup file.',
+      nudge: 'Time to back up your progress (settings)', invalidFile: 'Not a valid backup file.',
       achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -660,7 +658,7 @@
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
       stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
       backup: 'Back-up', save: 'Opslaan', restore: 'Herstellen',
-      nudge: 'Tik om een back-up van je voortgang te maken', invalidFile: 'Geen geldig back-upbestand.',
+      nudge: 'Tijd voor een back-up van je voortgang (instellingen)', invalidFile: 'Geen geldig back-upbestand.',
       achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
@@ -1340,6 +1338,21 @@
       div.appendChild(seg);
       wrap.appendChild(div);
     });
+    var crow = document.createElement('div');
+    crow.className = 'set-row';
+    var clbl = document.createElement('span');
+    clbl.className = 'set-label';
+    clbl.textContent = t.custom;
+    var cseg = document.createElement('span');
+    cseg.className = 'seg';
+    var cbtn = document.createElement('button');
+    cbtn.type = 'button';
+    cbtn.textContent = t.edit;
+    cbtn.addEventListener('click', editCustom);
+    cseg.appendChild(cbtn);
+    crow.appendChild(clbl);
+    crow.appendChild(cseg);
+    wrap.appendChild(crow);
     var brow = document.createElement('div');
     brow.className = 'set-row';
     var blbl = document.createElement('span');
@@ -1360,21 +1373,6 @@
     brow.appendChild(blbl);
     brow.appendChild(bseg);
     wrap.appendChild(brow);
-    var crow = document.createElement('div');
-    crow.className = 'set-row';
-    var clbl = document.createElement('span');
-    clbl.className = 'set-label';
-    clbl.textContent = t.custom;
-    var cseg = document.createElement('span');
-    cseg.className = 'seg';
-    var cbtn = document.createElement('button');
-    cbtn.type = 'button';
-    cbtn.textContent = t.edit;
-    cbtn.addEventListener('click', editCustom);
-    cseg.appendChild(cbtn);
-    crow.appendChild(clbl);
-    crow.appendChild(cseg);
-    wrap.appendChild(crow);
   }
 
   function applySettings() {
@@ -1704,8 +1702,6 @@
     el.style.display = due ? '' : 'none';
     el.textContent = T().nudge;
   }
-  document.getElementById('backupNudge').addEventListener('click', doBackup);
-
   // ---------- Version indicator ----------
   document.getElementById('ver').textContent = 'v' + APP_VERSION;
   document.getElementById('ver2').textContent = 'v' + APP_VERSION;
