@@ -571,7 +571,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.8';
+  var APP_VERSION = '1.7.9';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -668,6 +668,14 @@
       localStorage.removeItem('zikr-count');
     }
   } catch (e) {}
+  // one-time lifetime total adjustment (requested 2026-07-17)
+  try {
+    if (!localStorage.getItem('zikr-adj-9823')) {
+      localStorage.setItem('zikr-total', '9823');
+      localStorage.setItem('zikr-adj-9823', '1');
+    }
+  } catch (e) {}
+
   // seed history from the single last-done date (one-time migration)
   try {
     var seedLd = localStorage.getItem('zikr-last-done');
