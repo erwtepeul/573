@@ -248,6 +248,7 @@
   #compassSub {
     direction: rtl; font-family: 'Amiri', serif; font-weight: 400;
     font-size: 1.05rem; line-height: 1.8; margin-bottom: 4px;
+    transform: translateY(-8px);
   }
   body[data-script="ur"] #compassSub {
     font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; font-size: 1.1rem;
@@ -761,7 +762,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.7';
+  var APP_VERSION = '2.0.8';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -1967,11 +1968,11 @@
   }
   function updateNeedle() {
     if (qiblaBearing === null) return;
-    var dial = document.getElementById('qiblaDial');
     var needle = document.getElementById('qiblaNeedle');
     var heading = deviceHeading !== null ? deviceHeading : 0;
+    // the dial background stays fixed (N always faces north / top);
+    // only the needle rotates to show the Qibla bearing relative to heading
     needle.style.transform = 'rotate(' + ((qiblaBearing - heading + 360) % 360) + 'deg)';
-    dial.style.transform = hasCompassSensor ? 'rotate(' + (-heading) + 'deg)' : 'rotate(0deg)';
   }
   function onDeviceOrientation(e) {
     var heading = null;
