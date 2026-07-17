@@ -48,6 +48,10 @@
   body[data-script="ur"] .done-msg,
   body[data-script="ur"] .frame-top,
   body[data-script="ur"] .p-ar { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; }
+  .p-ar.latin, .frame-top.latin,
+  body[data-script="ur"] .p-ar.latin,
+  body[data-script="ur"] .frame-top.latin { font-family: 'Poppins', sans-serif; font-weight: 300; }
+  .p-ar.latin { font-size: 0.95rem; }
   /* Geometric Islamic pattern overlay (kept in all themes) */
   body::before {
     content: "";
@@ -90,7 +94,7 @@
   .hidden { display: none !important; }
 
   /* ---------- Splash ---------- */
-  #splash, #settings { animation: fadeIn 1.2s ease; }
+  #splash, #settings, #history { animation: fadeIn 1.2s ease; }
   /* lift the text/icon block without moving the preset picker and start button */
   .crescent, .bismillah, .verse-urdu, .verse-en, .verse-ref { transform: translateY(-6vh); }
   .crescent { font-size: 3rem; color: var(--gold); margin-bottom: 8px; font-family: serif; }
@@ -344,15 +348,9 @@
     z-index: 2;
   }
   .rule {
-    display: flex; align-items: center; gap: 14px;
-    width: 100%; max-width: 340px;
-    color: var(--gold); font-size: 0.8rem;
+    width: 170px; height: 2px; font-size: 0;
+    background: linear-gradient(to right, transparent, rgba(212,175,55,0.55), transparent);
   }
-  .rule::before, .rule::after {
-    content: ""; flex: 1; height: 1px;
-    background: linear-gradient(to right, transparent, var(--gold));
-  }
-  .rule::after { background: linear-gradient(to left, transparent, var(--gold)); }
   .done-msg-en {
     direction: ltr;
     font-family: 'Poppins', sans-serif;
@@ -493,7 +491,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.5.0';
+  var APP_VERSION = '1.5.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false };
@@ -680,7 +678,10 @@
     function lerp(a, b) { return Math.round(a + (b - a) * t); }
     ringFg.style.stroke = 'rgb(' + lerp(138, 255) + ',' + lerp(109, 244) + ',' + lerp(34, 189) + ')';
     ringFg.style.filter = 'drop-shadow(0 0 ' + (2 + 14 * t).toFixed(1) + 'px rgba(255,224,102,' + (0.15 + 0.85 * t).toFixed(2) + '))';
-    document.getElementById('dhikrName').textContent = SET.script === 'ur' ? preset.ur : preset.ar;
+    var dhEl = document.getElementById('dhikrName');
+    var dhTxt = SET.script === 'ur' ? preset.ur : preset.ar;
+    dhEl.textContent = dhTxt;
+    dhEl.classList.toggle('latin', !/[؀-ۿ]/.test(dhTxt));
     document.getElementById('countTargetEl').textContent = '/ ' + TARGET;
     renderStreak();
     renderSummary();
@@ -1111,7 +1112,9 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'preset' + (p.id === preset.id ? ' sel' : '');
-      b.innerHTML = '<span class="p-ar">' + (SET.script === 'ur' ? p.ur : p.ar) + '</span>' +
+      var arTxt = SET.script === 'ur' ? p.ur : p.ar;
+      var isLatin = !/[؀-ۿ]/.test(arTxt);
+      b.innerHTML = '<span class="p-ar' + (isLatin ? ' latin' : '') + '">' + arTxt + '</span>' +
                     '<span class="p-n">' + p.label + ' × ' + p.target + '</span>';
       b.addEventListener('click', function () {
         preset = p;
