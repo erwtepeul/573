@@ -133,12 +133,19 @@
     margin-bottom: 30px;
   }
   .prayer-line {
-    background: none; border: none; cursor: pointer;
+    display: block;
+    width: 100%; max-width: 320px;
+    margin: 10px auto 0;
+    text-align: center;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 14px;
+    padding: 10px 14px;
+    cursor: pointer;
     direction: ltr;
     font-family: 'Poppins', sans-serif; font-weight: 300;
     font-size: 0.72rem; color: var(--gold); opacity: 0.9;
     letter-spacing: 0.4px;
-    margin: 10px 0 0;
   }
   .presets {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -762,7 +769,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.9';
+  var APP_VERSION = '2.1.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
