@@ -95,6 +95,13 @@
 
   /* ---------- Splash ---------- */
   #splash, #settings, #history, #stats { animation: fadeIn 1.2s ease; }
+  #stats {
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #stats .set-title { margin-top: 12px; flex-shrink: 0; }
+  #stats .ver { position: static; margin-top: 14px; flex-shrink: 0; }
   /* lift the text/icon block without moving the preset picker and start button */
   .crescent, .bismillah, .verse-urdu, .verse-en, .verse-ref { transform: translateY(-6vh); }
   .crescent { font-size: 3rem; color: var(--gold); margin-bottom: 8px; font-family: serif; }
@@ -521,7 +528,7 @@
     <div class="stat-lines" id="statLines"></div>
     <div class="stats-sub" id="achTitle" style="margin-top:18px;"></div>
     <div class="badges" id="badges"></div>
-    <div class="badges" id="badgesStreak" style="margin-top:12px;"></div>
+    <div class="badges" id="badgesStreak" style="margin-top:26px;"></div>
     <button class="start-btn" id="statsBackBtn" style="margin-top:24px;">Back</button>
     <div class="ver" id="ver4"></div>
   </div>
@@ -564,7 +571,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.2';
+  var APP_VERSION = '1.7.3';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -582,7 +589,7 @@
       confirmReset: 'Reset the counter to zero?',
       streak: 'Streak', day: 'day', days: 'days',
       counts: 'counts in a lifetime', goal: 'goal reached', goals: 'goals reached',
-      lastToday: 'last time goal reached was today', lastYesterday: 'last time goal reached was yesterday', lastOn: 'last time goal reached was on',
+      lastToday: 'last time your goal was reached was today', lastYesterday: 'last time your goal was reached was yesterday', lastOn: 'last time your goal was reached was on',
       settings: 'Settings', language: 'Language', script: 'Script', theme: 'Theme', numerals: 'Numerals',
       vibration: 'Vibration', milestone: 'Milestone every', showTrans: 'Show translation',
       back: 'Back', on: 'On', off: 'Off',
@@ -607,7 +614,7 @@
       confirmReset: 'Teller op nul zetten?',
       streak: 'Reeks', day: 'dag', days: 'dagen',
       counts: 'tellingen in totaal', goal: 'doel bereikt', goals: 'doelen bereikt',
-      lastToday: 'laatste keer doel bereikt was vandaag', lastYesterday: 'laatste keer doel bereikt was gisteren', lastOn: 'laatste keer doel bereikt was op',
+      lastToday: 'laatste keer dat je doel werd bereikt was vandaag', lastYesterday: 'laatste keer dat je doel werd bereikt was gisteren', lastOn: 'laatste keer dat je doel werd bereikt was op',
       settings: 'Instellingen', language: 'Taal', script: 'Schrift', theme: 'Thema', numerals: 'Cijfers',
       vibration: 'Trillen', milestone: 'Mijlpaal elke', showTrans: 'Vertaling tonen',
       back: 'Terug', on: 'Aan', off: 'Uit',
@@ -1490,12 +1497,9 @@
     // rows appear as you approach them
     var MILS = [10000, 20000, 30000, 40000, 50000];
     for (var mv = 100000; mv <= 2000000; mv += 100000) MILS.push(mv);
-    var achieved = 0;
-    while (achieved < MILS.length && total >= MILS[achieved]) achieved++;
-    var shown = Math.min(MILS.length, Math.max(5, Math.ceil((achieved + 1) / 5) * 5));
     var bw = document.getElementById('badges');
     bw.innerHTML = '';
-    for (var bi = 0; bi < shown; bi++) {
+    for (var bi = 0; bi < MILS.length; bi++) {
       var b = document.createElement('div');
       b.className = 'badge' + (total >= MILS[bi] ? ' won' : '');
       b.innerHTML = '<span class="badge-seal">' + shortNum(MILS[bi]) + '</span>';
