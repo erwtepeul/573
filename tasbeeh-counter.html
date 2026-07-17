@@ -95,7 +95,7 @@
   .hidden { display: none !important; }
 
   /* ---------- Splash ---------- */
-  #splash, #settings, #history, #stats { animation: fadeIn 1.2s ease; }
+  #splash, #settings, #history, #stats, #compass { animation: fadeIn 1.2s ease; }
   #stats {
     justify-content: flex-start;
     overflow-y: auto;
@@ -243,6 +243,63 @@
     border: none; cursor: pointer; opacity: 0.8;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d4af37' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E") no-repeat center / contain;
     filter: drop-shadow(0 0 3px rgba(212,175,55,0.3));
+  }
+  .qibla-dial-wrap {
+    position: relative; width: 220px; height: 220px;
+    margin: 6px 0 20px;
+  }
+  .qibla-dial {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--btn1), var(--btn2));
+    border: 1px solid rgba(212,175,55,0.5);
+    box-shadow: 0 0 24px rgba(212,175,55,0.12), inset 0 0 20px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease-out;
+  }
+  .qibla-dial::before {
+    content: ""; position: absolute; inset: 12px; border-radius: 50%;
+    border: 1px solid rgba(212,175,55,0.25);
+  }
+  .qibla-label {
+    position: absolute; left: 50%; top: 50%;
+    font-family: 'Poppins', sans-serif; font-size: 0.7rem; font-weight: 400;
+    color: var(--gold-light);
+  }
+  .qibla-label.n { transform: translate(-50%, -97px); color: var(--gold); }
+  .qibla-label.e { transform: translate(76px, -50%); }
+  .qibla-label.s { transform: translate(-50%, 77px); }
+  .qibla-label.w { transform: translate(-96px, -50%); }
+  .qibla-needle { position: absolute; inset: 0; transition: transform 0.2s ease-out; }
+  .qibla-needle-line {
+    position: absolute; left: 50%; top: 50%;
+    width: 3px; height: 92px;
+    background: linear-gradient(to top, transparent, var(--gold) 30%, var(--gold-light));
+    transform: translate(-50%, -100%); transform-origin: 50% 100%;
+    border-radius: 2px;
+    filter: drop-shadow(0 0 6px rgba(212,175,55,0.6));
+  }
+  .qibla-kaaba {
+    position: absolute; left: 50%; top: 50%;
+    font-size: 1rem;
+    transform: translate(-50%, calc(-100% - 78px));
+    transform-origin: 50% calc(100% + 78px);
+  }
+  .qibla-dot {
+    position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold-light); transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px rgba(240,217,140,0.8);
+  }
+  .qibla-nums { display: flex; gap: 34px; }
+  .qibla-num { display: flex; flex-direction: column; align-items: center; }
+  .qibla-num .v { font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--gold-light); font-weight: 400; }
+  .qibla-num .l {
+    font-family: 'Poppins', sans-serif; font-size: 0.58rem; color: var(--gold-light); opacity: 0.65;
+    letter-spacing: 0.4px; text-transform: uppercase; margin-top: 2px;
+  }
+  .qibla-enable {
+    background: none; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px;
+    color: var(--gold-light); cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 0.66rem;
+    padding: 8px 16px; margin-top: 16px; max-width: 260px; line-height: 1.4;
   }
   .khatam {
     position: absolute; left: 50%; top: 50%; width: 180px; height: 180px;
@@ -579,6 +636,32 @@
     <div class="ver" id="ver4"></div>
   </div>
 
+  <!-- Qibla Compass -->
+  <div id="compass" class="screen hidden">
+    <div class="set-title" id="compassTitle">Qibla</div>
+    <div class="stats-sub" id="compassSub"></div>
+    <div class="qibla-dial-wrap">
+      <div class="qibla-dial" id="qiblaDial"></div>
+      <div id="qiblaTicks"></div>
+      <div class="qibla-label n">N</div>
+      <div class="qibla-label e">E</div>
+      <div class="qibla-label s">S</div>
+      <div class="qibla-label w">W</div>
+      <div class="qibla-needle" id="qiblaNeedle">
+        <div class="qibla-needle-line"></div>
+        <div class="qibla-kaaba">🕋</div>
+      </div>
+      <div class="qibla-dot"></div>
+    </div>
+    <div class="qibla-nums">
+      <div class="qibla-num"><span class="v" id="qiblaBearingVal">—</span><span class="l" id="qiblaBearingLbl"></span></div>
+      <div class="qibla-num"><span class="v" id="qiblaDistVal">—</span><span class="l" id="qiblaDistLbl"></span></div>
+    </div>
+    <button class="qibla-enable" id="compassEnableBtn" type="button" style="display:none;"></button>
+    <button class="start-btn" id="compassBackBtn" style="margin-top:20px;">Back</button>
+    <div class="ver" id="ver5"></div>
+  </div>
+
   <!-- Counter -->
   <div id="counter" class="screen hidden">
     <button class="back-arrow" id="counterBackBtn" type="button" aria-label="back"></button>
@@ -618,7 +701,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.0.3';
+  var APP_VERSION = '2.0.4';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -647,6 +730,8 @@
       nudge: 'Time to back up your progress (settings)', invalidFile: 'Not a valid backup file.',
       enableP: 'Show prayer times', locFail: 'Could not get your location.',
       inWord: 'in', hUnit: 'h', mUnit: 'm',
+      qibla: 'Qibla', qiblaSub: 'Direction to the Kaaba', qiblaBearing: 'Bearing', qiblaDist: 'Distance',
+      qiblaHeading: 'Heading', enableCompass: 'Enable device compass', noSensor: 'No compass sensor detected \u2014 point your phone flat and align North at the top.',
       achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -676,6 +761,8 @@
       nudge: 'Tijd voor een back-up van je voortgang (instellingen)', invalidFile: 'Geen geldig back-upbestand.',
       enableP: 'Toon gebedstijden', locFail: 'Kon je locatie niet bepalen.',
       inWord: 'over', hUnit: 'u', mUnit: 'm',
+      qibla: 'Qibla', qiblaSub: 'Richting naar de Kaaba', qiblaBearing: 'Richting', qiblaDist: 'Afstand',
+      qiblaHeading: 'Kompas', enableCompass: 'Kompas van toestel inschakelen', noSensor: 'Geen kompassensor gevonden \u2014 houd je telefoon plat met het Noorden boven.',
       achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
@@ -772,6 +859,7 @@
   var settings = document.getElementById('settings');
   var histScreen = document.getElementById('history');
   var statsScreen = document.getElementById('stats');
+  var compassScreen = document.getElementById('compass');
   var countNum = document.getElementById('countNum');
   var ringFg = document.getElementById('ringFg');
   ringFg.style.strokeDasharray = CIRC;
@@ -862,6 +950,7 @@
     settings.classList.add('hidden');
     histScreen.classList.add('hidden');
     statsScreen.classList.add('hidden');
+    compassScreen.classList.add('hidden');
     el.classList.remove('hidden');
     if (el === counter) requestWake(); else releaseWake();
   }
@@ -1745,11 +1834,95 @@
         try { localStorage.setItem('zikr-loc', JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude })); } catch (e) {}
         renderPrayer();
       }, function () { alert(T().locFail); });
+      return;
     }
+    renderCompass();
+    show(compassScreen);
   });
   setInterval(function () {
     if (!splash.classList.contains('hidden')) renderPrayer();
   }, 30000);
+
+  // ---------- Qibla compass ----------
+  var KAABA = { lat: 21.4225, lng: 39.8262 };
+  function qiblaBearingFrom(lat, lng) {
+    var phi1 = lat * D2R, phi2 = KAABA.lat * D2R;
+    var dLambda = (KAABA.lng - lng) * D2R;
+    var y = Math.sin(dLambda) * Math.cos(phi2);
+    var x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
+    return (Math.atan2(y, x) * R2D + 360) % 360;
+  }
+  function qiblaDistanceKm(lat, lng) {
+    var R = 6371;
+    var phi1 = lat * D2R, phi2 = KAABA.lat * D2R;
+    var dPhi = (KAABA.lat - lat) * D2R, dLambda = (KAABA.lng - lng) * D2R;
+    var a = Math.sin(dPhi / 2) * Math.sin(dPhi / 2) + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) * Math.sin(dLambda / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+  var qiblaBearing = null, deviceHeading = null, hasCompassSensor = false, orientationAttached = false;
+  function updateNeedle() {
+    if (qiblaBearing === null) return;
+    var dial = document.getElementById('qiblaDial');
+    var needle = document.getElementById('qiblaNeedle');
+    var heading = deviceHeading !== null ? deviceHeading : 0;
+    needle.style.transform = 'rotate(' + ((qiblaBearing - heading + 360) % 360) + 'deg)';
+    dial.style.transform = hasCompassSensor ? 'rotate(' + (-heading) + 'deg)' : 'rotate(0deg)';
+  }
+  function onDeviceOrientation(e) {
+    var heading = null;
+    if (typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
+    else if (e.alpha !== null && e.alpha !== undefined) heading = 360 - e.alpha;
+    if (heading !== null) {
+      hasCompassSensor = true;
+      deviceHeading = heading;
+      document.getElementById('compassEnableBtn').style.display = 'none';
+      updateNeedle();
+    }
+  }
+  function attachOrientation() {
+    if (orientationAttached) return;
+    orientationAttached = true;
+    window.addEventListener('deviceorientationabsolute', onDeviceOrientation, true);
+    window.addEventListener('deviceorientation', onDeviceOrientation, true);
+    setTimeout(function () {
+      if (!hasCompassSensor) {
+        var btn = document.getElementById('compassEnableBtn');
+        btn.textContent = T().noSensor;
+        btn.style.display = '';
+      }
+    }, 900);
+  }
+  document.getElementById('compassEnableBtn').addEventListener('click', function () {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(function (state) {
+        if (state === 'granted') attachOrientation();
+      }).catch(function () {});
+    } else {
+      attachOrientation();
+    }
+  });
+  function renderCompass() {
+    var t = T();
+    document.getElementById('compassTitle').textContent = t.qibla;
+    document.getElementById('compassSub').textContent = t.qiblaSub;
+    document.getElementById('compassBackBtn').textContent = t.back;
+    document.getElementById('qiblaBearingLbl').textContent = t.qiblaBearing;
+    document.getElementById('qiblaDistLbl').textContent = t.qiblaDist;
+    var btn = document.getElementById('compassEnableBtn');
+    btn.textContent = t.enableCompass;
+    btn.style.display = hasCompassSensor ? 'none' : '';
+    var loc = getLoc();
+    if (!loc) return;
+    qiblaBearing = qiblaBearingFrom(loc.lat, loc.lng);
+    var dist = qiblaDistanceKm(loc.lat, loc.lng);
+    document.getElementById('qiblaBearingVal').textContent = toNum(Math.round(qiblaBearing)) + '\u00b0';
+    document.getElementById('qiblaDistVal').textContent = fmt(Math.round(dist)) + ' km';
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+      attachOrientation();
+    }
+    updateNeedle();
+  }
+  document.getElementById('compassBackBtn').addEventListener('click', function () { show(splash); });
 
   // ---------- Backup, restore & nudge ----------
   function doBackup() {
@@ -1815,6 +1988,7 @@
   document.getElementById('ver2').textContent = 'v' + APP_VERSION;
   document.getElementById('ver3').textContent = 'v' + APP_VERSION;
   document.getElementById('ver4').textContent = 'v' + APP_VERSION;
+  document.getElementById('ver5').textContent = 'v' + APP_VERSION;
 
   // ---------- PWA service worker (no-op when opened as a plain file) ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
