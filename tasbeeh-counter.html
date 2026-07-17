@@ -132,6 +132,25 @@
     font-size: 0.7rem; color: var(--gold); opacity: 0.8;
     margin-bottom: 30px;
   }
+  .prayer-line {
+    background: none; border: none; cursor: pointer;
+    direction: ltr;
+    font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.72rem; color: var(--gold); opacity: 0.9;
+    letter-spacing: 0.4px;
+    margin: -14px 0 0;
+  }
+  .prayer-list {
+    direction: ltr; width: 210px; margin-top: 8px;
+    font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.72rem; color: var(--gold-light);
+  }
+  .prayer-row {
+    display: flex; justify-content: space-between;
+    padding: 2px 6px;
+    border-bottom: 1px solid rgba(212,175,55,0.12);
+  }
+  .prayer-row b { font-weight: 400; color: var(--cream); }
   .presets {
     display: grid; grid-template-columns: 1fr 1fr;
     gap: 10px; margin: 7vh 0 28px; width: 100%; max-width: 320px;
@@ -526,6 +545,8 @@
     <div class="verse-urdu" id="verseUrdu"></div>
     <div class="verse-en" id="verseEn"></div>
     <div class="verse-ref" id="verseRef"></div>
+    <button class="prayer-line" id="prayerLine" type="button"></button>
+    <div class="prayer-list" id="prayerList" style="display:none;"></div>
     <div class="presets" id="presets"></div>
     <button class="start-btn" id="startBtn">Start</button>
     <button class="nudge" id="backupNudge" type="button" style="display:none;"></button>
@@ -609,7 +630,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.9.3';
+  var APP_VERSION = '2.0.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -636,6 +657,8 @@
       stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
       backup: 'Backup', save: 'Save', restore: 'Restore',
       nudge: 'Time to back up your progress (settings)', invalidFile: 'Not a valid backup file.',
+      enableP: 'Show prayer times', locFail: 'Could not get your location.', sunrise: 'Sunrise',
+      inWord: 'in', hUnit: 'h', mUnit: 'm',
       achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -663,6 +686,8 @@
       stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
       backup: 'Back-up', save: 'Opslaan', restore: 'Herstellen',
       nudge: 'Tijd voor een back-up van je voortgang (instellingen)', invalidFile: 'Geen geldig back-upbestand.',
+      enableP: 'Toon gebedstijden', locFail: 'Kon je locatie niet bepalen.', sunrise: 'Zonsopkomst',
+      inWord: 'over', hUnit: 'u', mUnit: 'm',
       achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
@@ -710,14 +735,6 @@
       localStorage.removeItem('zikr-count');
     }
   } catch (e) {}
-  // one-time lifetime total adjustment (requested 2026-07-17)
-  try {
-    if (!localStorage.getItem('zikr-adj-9823')) {
-      localStorage.setItem('zikr-total', '9823');
-      localStorage.setItem('zikr-adj-9823', '1');
-    }
-  } catch (e) {}
-
   // reconcile history with the streak counter: the streak predates day-by-day
   // history, so backfill the consecutive days the current streak represents
   try {
@@ -1394,6 +1411,7 @@
     document.getElementById('histTitle').textContent = t.history;
     document.getElementById('histBackBtn').textContent = t.back;
     renderNudge();
+    renderPrayer();
     document.getElementById('duaAr').textContent = SET.script === 'ur' ? DUA.ur : DUA.ar;
     var duaTr = document.getElementById('duaTr');
     duaTr.textContent = SET.lang === 'nl' ? DUA.nl : DUA.en;
@@ -1646,6 +1664,118 @@
     show(statsScreen);
   });
   document.getElementById('statsBackBtn').addEventListener('click', function () { show(splash); });
+
+  // ---------- Prayer times ----------
+  // Offline astronomical calculation (USNO solar position approximations).
+  // Angles: Muslim World League (Fajr 18\u00b0, Isha 17\u00b0), Asr: standard shadow factor 1.
+  // High latitudes fall back to the angle-based night fraction rule.
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  function sunCoords(d) {
+    var g = ((357.529 + 0.98560028 * d) % 360 + 360) % 360;
+    var q = ((280.459 + 0.98564736 * d) % 360 + 360) % 360;
+    var L = ((q + 1.915 * Math.sin(g * D2R) + 0.020 * Math.sin(2 * g * D2R)) % 360 + 360) % 360;
+    var e = 23.439 - 0.00000036 * d;
+    var decl = Math.asin(Math.sin(e * D2R) * Math.sin(L * D2R)) * R2D;
+    var RA = Math.atan2(Math.cos(e * D2R) * Math.sin(L * D2R), Math.cos(L * D2R)) * R2D / 15;
+    RA = ((RA % 24) + 24) % 24;
+    var eqt = q / 15 - RA;
+    eqt = ((eqt % 24) + 24) % 24;
+    if (eqt > 12) eqt -= 24;
+    return { decl: decl, eqt: eqt };
+  }
+  function calcPrayerTimes(lat, lng, date) {
+    var d0 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12) / 86400000 - 10957.5;
+    var sc = sunCoords(d0);
+    var noonUTC = 12 - sc.eqt - lng / 15;
+    function hourAngle(angle) {
+      var cosH = (-Math.sin(angle * D2R) - Math.sin(sc.decl * D2R) * Math.sin(lat * D2R)) /
+                 (Math.cos(sc.decl * D2R) * Math.cos(lat * D2R));
+      if (cosH < -1 || cosH > 1) return null;
+      return Math.acos(cosH) * R2D / 15;
+    }
+    var tzOff = -date.getTimezoneOffset() / 60;
+    var hSet = hourAngle(0.833);
+    if (hSet === null) return null;
+    var shadow = 1 + Math.tan(Math.abs(lat - sc.decl) * D2R);
+    var hAsr = hourAngle(-Math.atan(1 / shadow) * R2D);
+    var hFajr = hourAngle(18);
+    var hIsha = hourAngle(17);
+    var night = 24 - 2 * hSet;
+    var fajrU = hFajr !== null ? noonUTC - hFajr : (noonUTC - hSet) - night * 18 / 60;
+    var ishaU = hIsha !== null ? noonUTC + hIsha : (noonUTC + hSet) + night * 17 / 60;
+    function loc(h) { return h + tzOff; }
+    return {
+      fajr: loc(fajrU),
+      sunrise: loc(noonUTC - hSet),
+      dhuhr: loc(noonUTC) + 2 / 60,
+      asr: hAsr !== null ? loc(noonUTC + hAsr) : null,
+      maghrib: loc(noonUTC + hSet) + 2 / 60,
+      isha: loc(ishaU)
+    };
+  }
+  function getLoc() {
+    try { return JSON.parse(localStorage.getItem('zikr-loc') || 'null'); } catch (e) { return null; }
+  }
+  function fmtClock(h) {
+    h = ((h % 24) + 24) % 24;
+    var H = Math.floor(h), M = Math.round((h - H) * 60);
+    if (M === 60) { H = (H + 1) % 24; M = 0; }
+    return toNum(H) + ':' + toNum(M < 10 ? '0' + M : String(M));
+  }
+  var prayerOpen = false;
+  function renderPrayer() {
+    var t = T();
+    var line = document.getElementById('prayerLine');
+    var list = document.getElementById('prayerList');
+    var loc = getLoc();
+    if (!loc) {
+      line.textContent = t.enableP + ' \u203a';
+      list.style.display = 'none';
+      return;
+    }
+    var now = new Date();
+    var pt = calcPrayerTimes(loc.lat, loc.lng, now);
+    if (!pt) { line.textContent = ''; list.style.display = 'none'; return; }
+    var order = [['Fajr', pt.fajr], ['Dhuhr', pt.dhuhr], ['Asr', pt.asr], ['Maghrib', pt.maghrib], ['Isha', pt.isha]];
+    var nowH = now.getHours() + now.getMinutes() / 60;
+    var next = null, diff = 0;
+    for (var i = 0; i < order.length; i++) {
+      if (order[i][1] !== null && order[i][1] > nowH) { next = order[i][0]; diff = order[i][1] - nowH; break; }
+    }
+    if (!next) {
+      var tm = new Date(now.getTime() + 86400000);
+      var pt2 = calcPrayerTimes(loc.lat, loc.lng, tm);
+      next = 'Fajr';
+      diff = (24 - nowH) + ((pt2 || pt).fajr);
+    }
+    var dh = Math.floor(diff), dm = Math.round((diff - dh) * 60);
+    if (dm === 60) { dh++; dm = 0; }
+    line.textContent = next + ' ' + t.inWord + ' ' +
+      (dh > 0 ? toNum(dh) + t.hUnit + ' ' : '') + toNum(dm) + t.mUnit;
+    list.innerHTML = '';
+    [['Fajr', pt.fajr], [t.sunrise, pt.sunrise], ['Dhuhr', pt.dhuhr], ['Asr', pt.asr], ['Maghrib', pt.maghrib], ['Isha', pt.isha]].forEach(function (r) {
+      var div = document.createElement('div');
+      div.className = 'prayer-row';
+      div.innerHTML = '<span>' + r[0] + '</span><b>' + (r[1] !== null ? fmtClock(r[1]) : '\u2014') + '</b>';
+      list.appendChild(div);
+    });
+    list.style.display = prayerOpen ? '' : 'none';
+  }
+  document.getElementById('prayerLine').addEventListener('click', function () {
+    if (!getLoc()) {
+      if (!navigator.geolocation) { alert(T().locFail); return; }
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        try { localStorage.setItem('zikr-loc', JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude })); } catch (e) {}
+        renderPrayer();
+      }, function () { alert(T().locFail); });
+      return;
+    }
+    prayerOpen = !prayerOpen;
+    renderPrayer();
+  });
+  setInterval(function () {
+    if (!splash.classList.contains('hidden')) renderPrayer();
+  }, 30000);
 
   // ---------- Backup, restore & nudge ----------
   function doBackup() {
