@@ -206,6 +206,18 @@
     color: var(--cream);
   }
 
+  .nudge {
+    position: absolute;
+    bottom: max(70px, calc(env(safe-area-inset-bottom) + 64px));
+    left: 0; right: 0; text-align: center;
+    background: none; border: none; cursor: pointer;
+    direction: ltr;
+    font-family: 'Poppins', sans-serif; font-weight: 300;
+    font-size: 0.62rem; letter-spacing: 0.4px;
+    color: #ffe066; opacity: 0.9;
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: rgba(255,224,102,0.4);
+  }
   .copyright {
     position: absolute;
     bottom: max(48px, calc(env(safe-area-inset-bottom) + 42px));
@@ -514,6 +526,7 @@
     <div class="verse-ref" id="verseRef"></div>
     <div class="presets" id="presets"></div>
     <button class="start-btn" id="startBtn">Start</button>
+    <button class="nudge" id="backupNudge" type="button" style="display:none;"></button>
     <div class="last-done" id="summary"></div>
     <div class="ver" id="ver"></div>
   </div>
@@ -522,6 +535,7 @@
   <div id="settings" class="screen hidden">
     <div class="set-title" id="setTitle">Settings</div>
     <div class="set-rows" id="setRows"></div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none">
     <button class="start-btn" id="backBtn" style="margin-top:36px;">Back</button>
     <div class="copyright">© 2026 ersha limited. All rights reserved.</div>
     <div class="ver" id="ver2"></div>
@@ -593,7 +607,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.8.4';
+  var APP_VERSION = '1.9.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -618,6 +632,8 @@
       blue: 'Blue', black: 'Black', green: 'Green', red: 'Red',
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
       stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
+      backup: 'Backup', save: 'Save', restore: 'Restore',
+      nudge: 'Tap to back up your progress', invalidFile: 'Not a valid backup file.',
       achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -643,6 +659,8 @@
       blue: 'Blauw', black: 'Zwart', green: 'Groen', red: 'Rood',
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
       stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
+      backup: 'Back-up', save: 'Opslaan', restore: 'Herstellen',
+      nudge: 'Tik om een back-up van je voortgang te maken', invalidFile: 'Geen geldig back-upbestand.',
       achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
@@ -1322,6 +1340,26 @@
       div.appendChild(seg);
       wrap.appendChild(div);
     });
+    var brow = document.createElement('div');
+    brow.className = 'set-row';
+    var blbl = document.createElement('span');
+    blbl.className = 'set-label';
+    blbl.textContent = t.backup;
+    var bseg = document.createElement('span');
+    bseg.className = 'seg';
+    var bSave = document.createElement('button');
+    bSave.type = 'button';
+    bSave.textContent = t.save;
+    bSave.addEventListener('click', doBackup);
+    var bRest = document.createElement('button');
+    bRest.type = 'button';
+    bRest.textContent = t.restore;
+    bRest.addEventListener('click', function () { document.getElementById('importFile').click(); });
+    bseg.appendChild(bSave);
+    bseg.appendChild(bRest);
+    brow.appendChild(blbl);
+    brow.appendChild(bseg);
+    wrap.appendChild(brow);
     var crow = document.createElement('div');
     crow.className = 'set-row';
     var clbl = document.createElement('span');
@@ -1353,6 +1391,7 @@
     document.getElementById('backBtn').textContent = t.back;
     document.getElementById('histTitle').textContent = t.history;
     document.getElementById('histBackBtn').textContent = t.back;
+    renderNudge();
     document.getElementById('duaAr').textContent = SET.script === 'ur' ? DUA.ur : DUA.ar;
     var duaTr = document.getElementById('duaTr');
     duaTr.textContent = SET.lang === 'nl' ? DUA.nl : DUA.en;
@@ -1605,6 +1644,67 @@
     show(statsScreen);
   });
   document.getElementById('statsBackBtn').addEventListener('click', function () { show(splash); });
+
+  // ---------- Backup, restore & nudge ----------
+  function doBackup() {
+    var data = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('zikr-') === 0) data[k] = localStorage.getItem(k);
+      }
+    } catch (e) {}
+    var payload = { app: 'zikr-counter', version: APP_VERSION, exported: new Date().toISOString(), data: data };
+    try {
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'zikr-backup-' + today() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+    } catch (e) {}
+    try { localStorage.setItem('zikr-last-backup', today()); } catch (e) {}
+    renderNudge();
+  }
+
+  document.getElementById('importFile').addEventListener('change', function () {
+    var inp = document.getElementById('importFile');
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var obj = JSON.parse(r.result);
+        if (!obj || obj.app !== 'zikr-counter' || !obj.data) { alert(T().invalidFile); return; }
+        for (var k in obj.data) {
+          if (k.indexOf('zikr-') === 0) localStorage.setItem(k, String(obj.data[k]));
+        }
+        location.reload();
+      } catch (e) { alert(T().invalidFile); }
+    };
+    r.readAsText(f);
+  });
+
+  function renderNudge() {
+    var el = document.getElementById('backupNudge');
+    var lb = null;
+    try { lb = localStorage.getItem('zikr-last-backup'); } catch (e) {}
+    var due = false;
+    if (getN('zikr-total') > 0) {
+      if (!lb) {
+        due = true;
+      } else {
+        var pb = lb.split('-');
+        var diff = Math.floor((new Date() - new Date(+pb[0], +pb[1] - 1, +pb[2])) / 86400000);
+        due = diff >= 14;
+      }
+    }
+    el.style.display = due ? '' : 'none';
+    el.textContent = T().nudge;
+  }
+  document.getElementById('backupNudge').addEventListener('click', doBackup);
 
   // ---------- Version indicator ----------
   document.getElementById('ver').textContent = 'v' + APP_VERSION;
