@@ -23,6 +23,7 @@
     --bg3: #0e0e1c;
     --btn1: #1c1c36;
     --btn2: #10101f;
+    --dark: #07070e;
     --gold: #d4af37;
     --gold-light: #f0d98c;
     --cream: #faf6ec;
@@ -41,9 +42,9 @@
     touch-action: manipulation;
   }
   /* Color themes: background only; frame, buttons and gold stay the same */
-  body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; --btn1: #1c1c1c; --btn2: #0c0c0c; }
-  body[data-theme="green"] { --bg1: #143526; --bg2: #0d2618; --bg3: #07170e; --btn1: #122b1d; --btn2: #091a10; }
-  body[data-theme="red"] { --bg1: #4a1a20; --bg2: #331216; --bg3: #1c0a0d; --btn1: #2b1116; --btn2: #150709; }
+  body[data-theme="black"] { --bg1: #262626; --bg2: #151515; --bg3: #0a0a0a; --btn1: #1c1c1c; --btn2: #0c0c0c; --dark: #050505; }
+  body[data-theme="green"] { --bg1: #143526; --bg2: #0d2618; --bg3: #07170e; --btn1: #122b1d; --btn2: #091a10; --dark: #040b07; }
+  body[data-theme="red"] { --bg1: #4a1a20; --bg2: #331216; --bg3: #1c0a0d; --btn1: #2b1116; --btn2: #150709; --dark: #0e0506; }
   /* Urdu script mode: Nastaliq typeface for Urdu text */
   body[data-script="ur"] .verse-urdu { font-family: 'Noto Nastaliq Urdu', 'Amiri', serif; font-size: 1.3rem; line-height: 2.5; }
   body[data-script="ur"] .done-msg,
@@ -149,7 +150,7 @@
   }
   .presets {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px; margin: 2.5vh 0 28px; width: 100%; max-width: 320px;
+    gap: 10px; margin: 4vh 0 28px; width: 100%; max-width: 320px;
   }
   .preset {
     font-family: 'Amiri', serif;
@@ -277,7 +278,7 @@
   .qibla-dial-wrap { position: absolute; inset: 11px; }
   .qibla-dial {
     position: absolute; inset: 0; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, var(--btn1), var(--btn2));
+    background: radial-gradient(circle at 35% 30%, var(--bg3), var(--dark));
     border: 1px solid rgba(212,175,55,0.5);
     box-shadow: 0 0 24px rgba(212,175,55,0.12), inset 0 0 20px rgba(0,0,0,0.4);
     transition: transform 0.2s ease-out;
@@ -726,7 +727,7 @@
       <div class="qibla-num"><span class="v" id="qiblaDistVal">—</span><span class="l" id="qiblaDistLbl"></span></div>
     </div>
     <button class="qibla-enable" id="compassEnableBtn" type="button" style="display:none;"></button>
-    <button class="start-btn" id="compassBackBtn" style="margin-top:20px;">Back</button>
+    <button class="start-btn" id="compassBackBtn" style="margin-top:32px;">Back</button>
     <div class="ver" id="ver5"></div>
   </div>
 
@@ -769,7 +770,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.1.0';
+  var APP_VERSION = '2.1.1';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
