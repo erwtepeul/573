@@ -101,7 +101,7 @@
     -webkit-overflow-scrolling: touch;
   }
   #stats .set-title { margin-top: 12px; flex-shrink: 0; }
-  #stats .ver { position: static; margin-top: 14px; flex-shrink: 0; }
+  #stats .ver { position: static; margin-top: auto; padding-top: 16px; flex-shrink: 0; }
   /* lift the text/icon block without moving the preset picker and start button */
   .crescent, .bismillah, .verse-urdu, .verse-en, .verse-ref { transform: translateY(-6vh); }
   .crescent { font-size: 3rem; color: var(--gold); margin-bottom: 8px; font-family: serif; }
@@ -571,7 +571,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '1.7.3';
+  var APP_VERSION = '1.7.4';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -595,7 +595,7 @@
       back: 'Back', on: 'On', off: 'Off',
       blue: 'Blue', black: 'Black', green: 'Green',
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
-      stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', daysB: 'days',
+      stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
       achievements: 'Achievements',
       customLabel: 'Custom', promptPhrase: 'Phrase (leave empty to remove)', promptTarget: 'Target count',
       dow: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
@@ -620,7 +620,7 @@
       back: 'Terug', on: 'Aan', off: 'Uit',
       blue: 'Blauw', black: 'Zwart', green: 'Groen',
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
-      stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', daysB: 'dagen',
+      stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
       achievements: 'Prestaties',
       customLabel: 'Eigen', promptPhrase: 'Tekst (leeg laten om te verwijderen)', promptTarget: 'Doelaantal',
       dow: ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'],
@@ -1476,9 +1476,12 @@
     }
     drawChart(vals, days);
     var total = getN('zikr-total'), goals = getN('zikr-completions');
+    var histDays = 0;
+    try { histDays = JSON.parse(localStorage.getItem('zikr-history') || '[]').length; } catch (e) {}
     var lines = [
       [t.totalL, fmt(total)],
-      [t.goalsReached, fmt(goals)]
+      [t.goalsReached, fmt(goals)],
+      [t.numDays, fmt(histDays)]
     ];
     var lw = document.getElementById('statLines');
     lw.innerHTML = '';
@@ -1505,8 +1508,8 @@
       b.innerHTML = '<span class="badge-seal">' + shortNum(MILS[bi]) + '</span>';
       bw.appendChild(b);
     }
-    // streaks: one row adding up to a year
-    var ls = longestStreak();
+    // streaks: one row adding up to a year, starting over after each full year
+    var ls = longestStreak() % 365;
     var sw = document.getElementById('badgesStreak');
     sw.innerHTML = '';
     [7, 30, 90, 180, 365].forEach(function (dv) {
