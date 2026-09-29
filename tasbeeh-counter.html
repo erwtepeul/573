@@ -770,7 +770,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.1.4';
+  var APP_VERSION = '2.1.5';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -796,6 +796,7 @@
       history: 'History', longest: 'Longest streak', fullTap: 'Tap anywhere', custom: 'Custom dhikr', edit: 'Edit',
       stats: 'Statistics', last14: 'Last 14 days', totalL: 'Lifetime total', goalsReached: 'Goals reached', numDays: 'Number of days', daysB: 'days',
       backup: 'Backup', save: 'Save', restore: 'Restore',
+      resetAll: 'Reset to default', confirmResetAll: 'This clears every counter and statistic. This cannot be undone. Continue?',
       nudge: 'Time to back up your progress (settings)', invalidFile: 'Not a valid backup file.',
       enableP: 'Show prayer times', locFail: 'Could not get your location.',
       inWord: 'in', hUnit: 'h', mUnit: 'm',
@@ -827,6 +828,7 @@
       history: 'Geschiedenis', longest: 'Langste reeks', fullTap: 'Overal tikken', custom: 'Eigen dhikr', edit: 'Bewerken',
       stats: 'Statistieken', last14: 'Laatste 14 dagen', totalL: 'Totaal ooit', goalsReached: 'Doelen bereikt', numDays: 'Aantal dagen', daysB: 'dagen',
       backup: 'Back-up', save: 'Opslaan', restore: 'Herstellen',
+      resetAll: 'Terugzetten naar standaard', confirmResetAll: 'Dit wist alle tellers en statistieken. Dit kan niet ongedaan worden gemaakt. Doorgaan?',
       nudge: 'Tijd voor een back-up van je voortgang (instellingen)', invalidFile: 'Geen geldig back-upbestand.',
       enableP: 'Toon gebedstijden', locFail: 'Kon je locatie niet bepalen.',
       inWord: 'over', hUnit: 'u', mUnit: 'm',
@@ -1541,6 +1543,34 @@
     brow.appendChild(blbl);
     brow.appendChild(bseg);
     wrap.appendChild(brow);
+    var rrow = document.createElement('div');
+    rrow.className = 'set-row';
+    var rlbl = document.createElement('span');
+    rlbl.className = 'set-label';
+    rlbl.textContent = t.resetAll;
+    var rseg = document.createElement('span');
+    rseg.className = 'seg';
+    var rBtn = document.createElement('button');
+    rBtn.type = 'button';
+    rBtn.textContent = t.reset;
+    rBtn.addEventListener('click', function () {
+      if (confirm(T().confirmResetAll)) resetAllData();
+    });
+    rseg.appendChild(rBtn);
+    rrow.appendChild(rlbl);
+    rrow.appendChild(rseg);
+    wrap.appendChild(rrow);
+  }
+  function resetAllData() {
+    try {
+      var keys = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('zikr-') === 0) keys.push(k);
+      }
+      keys.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) {}
+    location.reload();
   }
 
   function applySettings() {
