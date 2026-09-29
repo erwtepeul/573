@@ -197,7 +197,7 @@
 
   /* ---------- Settings ---------- */
   .set-title { font-family: 'Poppins', sans-serif; font-weight: 300; font-size: 1.15rem; letter-spacing: 0.5px; color: var(--gold-light); margin-bottom: 26px; }
-  .set-rows { width: 100%; max-width: 340px; }
+  .set-rows { width: 100%; max-width: 340px; transform: translateY(-22px); }
   .set-row {
     display: flex; justify-content: space-between; align-items: center;
     gap: 10px; padding: 13px 2px;
@@ -669,7 +669,7 @@
     <div class="set-title" id="setTitle">Settings</div>
     <div class="set-rows" id="setRows"></div>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none">
-    <button class="start-btn" id="backBtn" style="margin-top:20px;">Back</button>
+    <button class="start-btn" id="backBtn" style="margin-top:20px; transform: translateY(-22px);">Back</button>
     <div class="copyright">© 2026 ersha limited. All rights reserved.</div>
     <div class="ver" id="ver2"></div>
   </div>
@@ -770,7 +770,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.1.6';
+  var APP_VERSION = '2.1.7';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
