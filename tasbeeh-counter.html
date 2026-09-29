@@ -770,7 +770,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.1.9';
+  var APP_VERSION = '2.2.0';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -2162,6 +2162,22 @@
   document.getElementById('ver3').textContent = 'v' + APP_VERSION;
   document.getElementById('ver4').textContent = 'v' + APP_VERSION;
   document.getElementById('ver5').textContent = 'v' + APP_VERSION;
+
+  // ---------- Piggyback the iOS motion-permission prompt on the first tap ----------
+  // requestPermission() needs a genuine user gesture, but if it was already
+  // granted in an earlier session it resolves immediately with no visible
+  // dialog. Grabbing it from whatever the user taps first (a preset, Start,
+  // the gear icon, ...) means the compass is usually already enabled by the
+  // time they open it, instead of needing its own dedicated tap every visit.
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    var firstTapHandler = function () {
+      document.removeEventListener('pointerdown', firstTapHandler, true);
+      DeviceOrientationEvent.requestPermission().then(function (state) {
+        if (state === 'granted') attachOrientation();
+      }).catch(function () {});
+    };
+    document.addEventListener('pointerdown', firstTapHandler, true);
+  }
 
   // ---------- PWA service worker (no-op when opened as a plain file) ----------
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
