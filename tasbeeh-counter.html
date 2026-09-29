@@ -770,7 +770,7 @@
 
 <script>
 (function () {
-  var APP_VERSION = '2.1.7';
+  var APP_VERSION = '2.1.9';
 
   // ---------- Settings ----------
   var SET = { lang: 'en', script: 'ar', theme: 'blue', vib: true, mile: 100, trans: true, fullTap: false, numerals: 'latin' };
@@ -2006,15 +2006,32 @@
       wrap.appendChild(card);
     });
   }
+  // pick the representation of `target` (mod 360) nearest to `prev`, so the
+  // CSS transition always takes the short way around instead of spinning
+  // almost a full circle when the angle crosses the 0/360 boundary
+  var dialRotDeg = 0, needleRotDeg = 0;
+  function nearestEquivalent(prev, target) {
+    var diff = target - prev;
+    diff -= 360 * Math.round(diff / 360);
+    return prev + diff;
+  }
   function updateNeedle() {
     if (qiblaBearing === null) return;
     var dial = document.getElementById('qiblaDial');
     var needle = document.getElementById('qiblaNeedle');
     var heading = deviceHeading !== null ? deviceHeading : 0;
     // the needle rotates independently to show the Qibla bearing relative to heading
-    needle.style.transform = 'rotate(' + ((qiblaBearing - heading + 360) % 360) + 'deg)';
+    var needleTarget = (qiblaBearing - heading + 360) % 360;
+    needleRotDeg = nearestEquivalent(needleRotDeg, needleTarget);
+    needle.style.transform = 'rotate(' + needleRotDeg + 'deg)';
     // the dial rotates the opposite way so N genuinely tracks true north as you turn
-    dial.style.transform = hasCompassSensor ? 'rotate(' + (-heading) + 'deg)' : 'rotate(0deg)';
+    var dialTarget = hasCompassSensor ? -heading : 0;
+    dialRotDeg = nearestEquivalent(dialRotDeg, dialTarget);
+    dial.style.transform = 'rotate(' + dialRotDeg + 'deg)';
+  }
+  // shortest signed angular distance from a0 to a1, in (-180, 180]
+  function shortAngleDelta(a0, a1) {
+    return ((a1 - a0 + 540) % 360) - 180;
   }
   function onDeviceOrientation(e) {
     var heading = null;
@@ -2022,7 +2039,13 @@
     else if (e.alpha !== null && e.alpha !== undefined) heading = 360 - e.alpha;
     if (heading !== null) {
       hasCompassSensor = true;
-      deviceHeading = heading;
+      if (deviceHeading === null) {
+        deviceHeading = heading;
+      } else {
+        // low-pass filter: ease toward the raw reading instead of snapping to
+        // it, so sensor noise doesn't make the needle flicker between values
+        deviceHeading = (deviceHeading + shortAngleDelta(deviceHeading, heading) * 0.15 + 360) % 360;
+      }
       document.getElementById('compassEnableBtn').style.display = 'none';
       updateNeedle();
     }
